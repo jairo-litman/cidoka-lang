@@ -1,6 +1,8 @@
 package lexer
 
-import "litlang/token"
+import (
+	"litlang/token"
+)
 
 type Lexer struct {
 	input        string // input string to lex
@@ -32,21 +34,47 @@ func (lex *Lexer) NextToken() token.Token {
 
 	switch lex.char {
 	case '=':
-		tok = newToken(token.ASSIGN, lex.char)
+		tok, _ = lex.compoundableToken(token.ASSIGN, token.EQ)
+	case '+':
+		var compounded bool
+		tok, compounded = lex.compoundableToken(token.PLUS, token.PLUSEQ)
+		if !compounded {
+			tok, _ = lex.compoundableToken(token.PLUS, token.INCR, '+')
+		}
+	case '-':
+		var compounded bool
+		tok, compounded = lex.compoundableToken(token.MINUS, token.MINUSEQ)
+		if !compounded {
+			tok, _ = lex.compoundableToken(token.MINUS, token.DECR, '-')
+		}
+	case '*':
+		tok, _ = lex.compoundableToken(token.MULT, token.MULTEQ)
+	case '/':
+		tok, _ = lex.compoundableToken(token.DIV, token.DIVEQ)
+	case '%':
+		tok, _ = lex.compoundableToken(token.MOD, token.MODEQ)
+	case '<':
+		tok, _ = lex.compoundableToken(token.LT, token.LTE)
+	case '>':
+		tok, _ = lex.compoundableToken(token.GT, token.GTE)
+	case '!':
+		tok, _ = lex.compoundableToken(token.NOT, token.NEQ)
+	case ',':
+		tok = newToken(token.COMMA, lex.char)
 	case ';':
 		tok = newToken(token.SEMICOLON, lex.char)
 	case '(':
 		tok = newToken(token.LPAREN, lex.char)
 	case ')':
 		tok = newToken(token.RPAREN, lex.char)
-	case ',':
-		tok = newToken(token.COMMA, lex.char)
-	case '+':
-		tok = newToken(token.PLUS, lex.char)
 	case '{':
 		tok = newToken(token.LBRACE, lex.char)
 	case '}':
 		tok = newToken(token.RBRACE, lex.char)
+	case '[':
+		tok = newToken(token.LBRACK, lex.char)
+	case ']':
+		tok = newToken(token.RBRACK, lex.char)
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
@@ -100,4 +128,27 @@ func (lex *Lexer) readNumber() string {
 
 func isDigit(char byte) bool {
 	return '0' <= char && char <= '9'
+}
+
+func (lex *Lexer) peekChar() byte {
+	if lex.readPosition >= len(lex.input) {
+		return 0
+	} else {
+		return lex.input[lex.readPosition]
+	}
+}
+
+func (lex *Lexer) compoundableToken(tokenType token.TokenType, compoundType token.TokenType, nextChar ...byte) (token.Token, bool) {
+	var ch byte = '='
+	if len(nextChar) > 0 {
+		ch = nextChar[0]
+	}
+	if lex.peekChar() == ch {
+		char := lex.char
+		lex.readChar()
+		literal := string(char) + string(lex.char)
+		return token.Token{Type: compoundType, Literal: literal}, true
+	} else {
+		return newToken(tokenType, lex.char), false
+	}
 }
