@@ -39,8 +39,8 @@ const (
 	GTE = ">="
 
 	// Logical operators
-	AND = "&&"
-	OR  = "||"
+	AND = "&&" // todo
+	OR  = "||" // todo
 	NOT = "!"
 
 	// Delimiters
