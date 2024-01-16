@@ -29,8 +29,6 @@ const (
 	MULT  = "*"
 	DIV   = "/"
 	MOD   = "%"
-	INCR  = "++"
-	DECR  = "--"
 
 	// Comparison operators
 	EQ  = "=="
@@ -77,6 +75,11 @@ var keywords = map[string]TokenType{
 	"return": RETURN,
 }
 
+/*
+LookupIdent checks the keywords table to see if the given identifier is a keyword.
+
+If it is, it returns the keyword's TokenType constant. If not, it's an identifier.
+*/
 func LookupIdent(ident string) TokenType {
 	if tok, ok := keywords[ident]; ok {
 		return tok

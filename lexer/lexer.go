@@ -23,8 +23,8 @@ func (lex *Lexer) readChar() {
 	} else {
 		lex.char = lex.input[lex.readPosition] // read next character
 	}
-	lex.position = lex.readPosition // update position
-	lex.readPosition += 1           // update readPosition
+	lex.position = lex.readPosition
+	lex.readPosition += 1
 }
 
 func (lex *Lexer) NextToken() token.Token {
@@ -34,31 +34,23 @@ func (lex *Lexer) NextToken() token.Token {
 
 	switch lex.char {
 	case '=':
-		tok, _ = lex.compoundableToken(token.ASSIGN, token.EQ)
+		tok = lex.compoundableToken(token.ASSIGN, token.EQ)
 	case '+':
-		var compounded bool
-		tok, compounded = lex.compoundableToken(token.PLUS, token.PLUSEQ)
-		if !compounded {
-			tok, _ = lex.compoundableToken(token.PLUS, token.INCR, '+')
-		}
+		tok = lex.compoundableToken(token.PLUS, token.PLUSEQ)
 	case '-':
-		var compounded bool
-		tok, compounded = lex.compoundableToken(token.MINUS, token.MINUSEQ)
-		if !compounded {
-			tok, _ = lex.compoundableToken(token.MINUS, token.DECR, '-')
-		}
+		tok = lex.compoundableToken(token.MINUS, token.MINUSEQ)
 	case '*':
-		tok, _ = lex.compoundableToken(token.MULT, token.MULTEQ)
+		tok = lex.compoundableToken(token.MULT, token.MULTEQ)
 	case '/':
-		tok, _ = lex.compoundableToken(token.DIV, token.DIVEQ)
+		tok = lex.compoundableToken(token.DIV, token.DIVEQ)
 	case '%':
-		tok, _ = lex.compoundableToken(token.MOD, token.MODEQ)
+		tok = lex.compoundableToken(token.MOD, token.MODEQ)
 	case '<':
-		tok, _ = lex.compoundableToken(token.LT, token.LTE)
+		tok = lex.compoundableToken(token.LT, token.LTE)
 	case '>':
-		tok, _ = lex.compoundableToken(token.GT, token.GTE)
+		tok = lex.compoundableToken(token.GT, token.GTE)
 	case '!':
-		tok, _ = lex.compoundableToken(token.NOT, token.NEQ)
+		tok = lex.compoundableToken(token.NOT, token.NEQ)
 	case ',':
 		tok = newToken(token.COMMA, lex.char)
 	case ';':
@@ -138,17 +130,13 @@ func (lex *Lexer) peekChar() byte {
 	}
 }
 
-func (lex *Lexer) compoundableToken(tokenType token.TokenType, compoundType token.TokenType, nextChar ...byte) (token.Token, bool) {
-	var ch byte = '='
-	if len(nextChar) > 0 {
-		ch = nextChar[0]
-	}
-	if lex.peekChar() == ch {
+func (lex *Lexer) compoundableToken(tokenType token.TokenType, compoundType token.TokenType) token.Token {
+	if lex.peekChar() == '=' { // check if next character is compound character
 		char := lex.char
 		lex.readChar()
-		literal := string(char) + string(lex.char)
-		return token.Token{Type: compoundType, Literal: literal}, true
+		literal := string(char) + string(lex.char) // compound literal e.g. "+="
+		return token.Token{Type: compoundType, Literal: literal}
 	} else {
-		return newToken(tokenType, lex.char), false
+		return newToken(tokenType, lex.char)
 	}
 }

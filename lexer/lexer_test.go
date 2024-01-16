@@ -24,7 +24,6 @@ func TestNextToken(t *testing.T) {
 	< > <= >=;
 	[];
 	+= -= *= /=;
-	++ --;
 	`
 
 	expectedTokens := []struct {
@@ -116,9 +115,6 @@ func TestNextToken(t *testing.T) {
 		{token.MINUSEQ, "-="},
 		{token.MULTEQ, "*="},
 		{token.DIVEQ, "/="},
-		{token.SEMICOLON, ";"},
-		{token.INCR, "++"},
-		{token.DECR, "--"},
 		{token.SEMICOLON, ";"},
 		{token.EOF, ""},
 	}
