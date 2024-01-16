@@ -1,3 +1,3 @@
-module litlang
+module boludolang
 
 go 1.20

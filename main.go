@@ -1,8 +1,8 @@
 package main
 
 import (
+	"boludolang/repl"
 	"fmt"
-	"litlang/repl"
 	"os"
 	"os/user"
 )
@@ -12,7 +12,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Hello %s! This is the Litlang programming language!\n", user.Username)
+	fmt.Printf("Hello %s! This is the Boludolang programming language!\n", user.Username)
 	fmt.Printf("Feel free to type in commands\n")
 	repl.Start(os.Stdin, os.Stdout)
 }

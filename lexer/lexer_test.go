@@ -1,7 +1,7 @@
 package lexer
 
 import (
-	"litlang/token"
+	"boludolang/token"
 	"testing"
 )
 

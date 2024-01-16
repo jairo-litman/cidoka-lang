@@ -1,11 +1,11 @@
 package repl
 
 import (
+	"boludolang/lexer"
+	"boludolang/token"
 	"bufio"
 	"fmt"
 	"io"
-	"litlang/lexer"
-	"litlang/token"
 )
 
 const PROMPT = ">> "
