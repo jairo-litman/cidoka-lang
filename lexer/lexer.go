@@ -34,23 +34,35 @@ func (lex *Lexer) NextToken() token.Token {
 
 	switch lex.char {
 	case '=':
-		tok = lex.compoundableToken(token.ASSIGN, token.EQ)
+		if lex.peekChar() == '=' {
+			char := lex.char
+			lex.readChar()
+			tok = token.Token{Type: token.EQ, Literal: string(char) + string(lex.char)}
+		} else {
+			tok = newToken(token.ASSIGN, lex.char)
+		}
 	case '+':
-		tok = lex.compoundableToken(token.PLUS, token.PLUSEQ)
+		tok = newToken(token.PLUS, lex.char)
 	case '-':
-		tok = lex.compoundableToken(token.MINUS, token.MINUSEQ)
+		tok = newToken(token.MINUS, lex.char)
 	case '*':
-		tok = lex.compoundableToken(token.MULT, token.MULTEQ)
+		tok = newToken(token.ASTERISK, lex.char)
 	case '/':
-		tok = lex.compoundableToken(token.DIV, token.DIVEQ)
+		tok = newToken(token.SLASH, lex.char)
 	case '%':
-		tok = lex.compoundableToken(token.MOD, token.MODEQ)
+		tok = newToken(token.MODULO, lex.char)
 	case '<':
-		tok = lex.compoundableToken(token.LT, token.LTE)
+		tok = newToken(token.LT, lex.char)
 	case '>':
-		tok = lex.compoundableToken(token.GT, token.GTE)
+		tok = newToken(token.GT, lex.char)
 	case '!':
-		tok = lex.compoundableToken(token.NOT, token.NEQ)
+		if lex.peekChar() == '=' {
+			char := lex.char
+			lex.readChar()
+			tok = token.Token{Type: token.NOT_EQ, Literal: string(char) + string(lex.char)}
+		} else {
+			tok = newToken(token.BANG, lex.char)
+		}
 	case ',':
 		tok = newToken(token.COMMA, lex.char)
 	case ';':
@@ -127,16 +139,5 @@ func (lex *Lexer) peekChar() byte {
 		return 0
 	} else {
 		return lex.input[lex.readPosition]
-	}
-}
-
-func (lex *Lexer) compoundableToken(tokenType token.TokenType, compoundType token.TokenType) token.Token {
-	if lex.peekChar() == '=' { // check if next character is compound character
-		char := lex.char
-		lex.readChar()
-		literal := string(char) + string(lex.char) // compound literal e.g. "+="
-		return token.Token{Type: compoundType, Literal: literal}
-	} else {
-		return newToken(tokenType, lex.char)
 	}
 }

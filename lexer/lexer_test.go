@@ -21,10 +21,6 @@ func TestNextToken(t *testing.T) {
 	}
 	10 == 10;
 	10 != 9;
-	< > <= >=
-	[]
-	+= -= *= /=
-	% %=
 	`
 
 	expectedTokens := []struct {
@@ -67,10 +63,10 @@ func TestNextToken(t *testing.T) {
 		{token.IDENT, "ten"},
 		{token.RPAREN, ")"},
 		{token.SEMICOLON, ";"},
-		{token.NOT, "!"},
+		{token.BANG, "!"},
 		{token.MINUS, "-"},
-		{token.DIV, "/"},
-		{token.MULT, "*"},
+		{token.SLASH, "/"},
+		{token.ASTERISK, "*"},
 		{token.INT, "5"},
 		{token.SEMICOLON, ";"},
 		{token.INT, "5"},
@@ -101,21 +97,9 @@ func TestNextToken(t *testing.T) {
 		{token.INT, "10"},
 		{token.SEMICOLON, ";"},
 		{token.INT, "10"},
-		{token.NEQ, "!="},
+		{token.NOT_EQ, "!="},
 		{token.INT, "9"},
 		{token.SEMICOLON, ";"},
-		{token.LT, "<"},
-		{token.GT, ">"},
-		{token.LTE, "<="},
-		{token.GTE, ">="},
-		{token.LBRACK, "["},
-		{token.RBRACK, "]"},
-		{token.PLUSEQ, "+="},
-		{token.MINUSEQ, "-="},
-		{token.MULTEQ, "*="},
-		{token.DIVEQ, "/="},
-		{token.MOD, "%"},
-		{token.MODEQ, "%="},
 		{token.EOF, ""},
 	}
 

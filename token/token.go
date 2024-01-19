@@ -16,32 +16,32 @@ const (
 	INT   = "INT"   // 1234567890
 
 	// Assignment operators
-	ASSIGN  = "="
-	PLUSEQ  = "+="
-	MINUSEQ = "-="
-	MULTEQ  = "*="
-	DIVEQ   = "/="
-	MODEQ   = "%="
+	ASSIGN      = "="
+	PLUS_EQ     = "+="
+	MINUS_EQ    = "-="
+	ASTERISK_EQ = "*="
+	SLASH_EQ    = "/="
+	MODULO_EQ   = "%="
 
 	// Arithmetic operators
-	PLUS  = "+"
-	MINUS = "-"
-	MULT  = "*"
-	DIV   = "/"
-	MOD   = "%"
+	PLUS     = "+"
+	MINUS    = "-"
+	ASTERISK = "*"
+	SLASH    = "/"
+	MODULO   = "%"
 
 	// Comparison operators
-	EQ  = "=="
-	NEQ = "!="
-	LT  = "<"
-	LTE = "<="
-	GT  = ">"
-	GTE = ">="
+	EQ     = "=="
+	NOT_EQ = "!="
+	LT     = "<"
+	LT_EQ  = "<="
+	GT     = ">"
+	GT_EQ  = ">="
 
 	// Logical operators
-	AND = "&&" // todo
-	OR  = "||" // todo
-	NOT = "!"
+	AND  = "&&" // todo
+	OR   = "||" // todo
+	BANG = "!"
 
 	// Delimiters
 	COMMA     = ","
