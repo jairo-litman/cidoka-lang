@@ -3,6 +3,7 @@ package ast
 import (
 	"boludolang/token"
 	"bytes"
+	"strings"
 )
 
 type Node interface {
@@ -155,6 +156,108 @@ func (infixExpr *InfixExpression) String() string {
 	out.WriteString(infixExpr.Left.String())
 	out.WriteString(" " + infixExpr.Operator + " ")
 	out.WriteString(infixExpr.Right.String())
+	out.WriteString(")")
+
+	return out.String()
+}
+
+type Boolean struct {
+	Token token.Token // the token.TRUE or token.FALSE token
+	Value bool
+}
+
+func (boolExpr *Boolean) expressionNode()      {}
+func (boolExpr *Boolean) TokenLiteral() string { return boolExpr.Token.Literal }
+func (boolExpr *Boolean) String() string       { return boolExpr.Token.Literal }
+
+type BlockStatement struct {
+	Token      token.Token // the token.LBRACE token
+	Statements []Statement
+}
+
+func (blockStmt *BlockStatement) statementNode()       {}
+func (blockStmt *BlockStatement) TokenLiteral() string { return blockStmt.Token.Literal }
+func (blockStmt *BlockStatement) String() string {
+	var out bytes.Buffer
+
+	for _, stmt := range blockStmt.Statements {
+		out.WriteString(stmt.String())
+	}
+
+	return out.String()
+}
+
+type IfExpression struct {
+	Token       token.Token // the token.IF token
+	Condition   Expression
+	Consequence *BlockStatement
+	Alternative *BlockStatement
+}
+
+func (ifExpr *IfExpression) expressionNode()      {}
+func (ifExpr *IfExpression) TokenLiteral() string { return ifExpr.Token.Literal }
+func (ifExpr *IfExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("if")
+	out.WriteString(ifExpr.Condition.String())
+	out.WriteString(" ")
+	out.WriteString(ifExpr.Consequence.String())
+
+	if ifExpr.Alternative != nil {
+		out.WriteString("else ")
+		out.WriteString(ifExpr.Alternative.String())
+	}
+
+	return out.String()
+}
+
+type FunctionLiteral struct {
+	Token      token.Token // the token.FUNCTION token
+	Parameters []*Identifier
+	Body       *BlockStatement
+}
+
+func (funcLit *FunctionLiteral) expressionNode()      {}
+func (funcLit *FunctionLiteral) TokenLiteral() string { return funcLit.Token.Literal }
+func (funcLit *FunctionLiteral) String() string {
+	var out bytes.Buffer
+
+	params := []string{}
+
+	for _, param := range funcLit.Parameters {
+		params = append(params, param.String())
+	}
+
+	out.WriteString(funcLit.TokenLiteral())
+	out.WriteString("(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(") ")
+	out.WriteString(funcLit.Body.String())
+
+	return out.String()
+}
+
+type CallExpression struct {
+	Token     token.Token // the token.LPAREN token
+	Function  Expression  // Identifier or FunctionLiteral
+	Arguments []Expression
+}
+
+func (callExpr *CallExpression) expressionNode()      {}
+func (callExpr *CallExpression) TokenLiteral() string { return callExpr.Token.Literal }
+func (callExpr *CallExpression) String() string {
+	var out bytes.Buffer
+
+	args := []string{}
+
+	for _, arg := range callExpr.Arguments {
+		args = append(args, arg.String())
+	}
+
+	out.WriteString(callExpr.Function.String())
+	out.WriteString("(")
+	out.WriteString(strings.Join(args, ", "))
 	out.WriteString(")")
 
 	return out.String()

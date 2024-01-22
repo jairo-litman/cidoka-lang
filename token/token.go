@@ -2,11 +2,6 @@ package token
 
 type TokenType string
 
-type Token struct {
-	Type    TokenType
-	Literal string
-}
-
 const (
 	ILLEGAL = "ILLEGAL" // unknown token
 	EOF     = "EOF"     // end of file
@@ -64,6 +59,11 @@ const (
 	ELSE     = "ELSE"
 	RETURN   = "RETURN"
 )
+
+type Token struct {
+	Type    TokenType
+	Literal string
+}
 
 var keywords = map[string]TokenType{
 	"fn":     FUNCTION,
