@@ -74,8 +74,6 @@ func TestBangOperator(t *testing.T) {
 	}{
 		{"!true", false},
 		{"!false", true},
-
-		// Bang operator should work with truthy and falsy values
 		{"!5", false},
 		{"!!5", true},
 		{"!!true", true},
@@ -131,6 +129,21 @@ func TestReturnStatements(t *testing.T) {
 			return 1;
 		}
 		`, 10},
+		{`
+		let f = fn(x) {
+			return x;
+			x + 10;
+		};
+		f(10);
+		`, 10},
+		{`
+		let f = fn(x) {
+			let result = x + 10;
+			return result;
+			return 10;
+		};
+		f(10);
+		`, 20},
 	}
 
 	for _, tt := range tests {
@@ -268,6 +281,24 @@ func TestClosures(t *testing.T) {
 	`
 
 	testIntegerObject(t, testEval(input), 4)
+}
+
+func TestEnclosingEnvironment(t *testing.T) {
+	input := `
+	let first = 10;
+	let second = 10;
+	let third = 10;
+
+	let ourFunction = fn(first) {
+		let second = 20;
+
+		first + second + third;
+	};
+
+	ourFunction(20) + first + second;
+	`
+
+	testIntegerObject(t, testEval(input), 70)
 }
 
 func testEval(input string) object.Object {
