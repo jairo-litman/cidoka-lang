@@ -262,3 +262,12 @@ func (callExpr *CallExpression) String() string {
 
 	return out.String()
 }
+
+type StringLiteral struct {
+	Token token.Token // the token.STRING token
+	Value string
+}
+
+func (strLit *StringLiteral) expressionNode()      {}
+func (strLit *StringLiteral) TokenLiteral() string { return strLit.Token.Literal }
+func (strLit *StringLiteral) String() string       { return strLit.Token.Literal }
