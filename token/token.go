@@ -16,14 +16,14 @@ const (
 	MINUS_EQ    = "-="
 	ASTERISK_EQ = "*="
 	SLASH_EQ    = "/="
-	MODULO_EQ   = "%="
+	MODULO_EQ   = "%=" // todo
 
 	// Arithmetic operators
 	PLUS     = "+"
 	MINUS    = "-"
 	ASTERISK = "*"
 	SLASH    = "/"
-	MODULO   = "%"
+	MODULO   = "%" // todo
 
 	// Comparison operators
 	EQ     = "=="
@@ -47,8 +47,8 @@ const (
 	RPAREN = ")"
 	LBRACE = "{"
 	RBRACE = "}"
-	LBRACK = "["
-	RBRACK = "]"
+	LBRACK = "[" // todo
+	RBRACK = "]" // todo
 
 	// Keywords
 	FUNCTION = "FUNCTION"
