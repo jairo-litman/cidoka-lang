@@ -30,9 +30,9 @@ const (
 	EQ     = "=="
 	NOT_EQ = "!="
 	LT     = "<"
-	LT_EQ  = "<="
+	LT_EQ  = "<=" // todo
 	GT     = ">"
-	GT_EQ  = ">="
+	GT_EQ  = ">=" // todo
 
 	// Logical operators
 	AND  = "&&" // todo
@@ -42,14 +42,15 @@ const (
 	// Delimiters
 	COMMA     = ","
 	SEMICOLON = ";"
+	COLON     = ":"
 
 	// Brackets
-	LPAREN = "("
-	RPAREN = ")"
-	LBRACE = "{"
-	RBRACE = "}"
-	LBRACK = "[" // todo
-	RBRACK = "]" // todo
+	LPAREN   = "("
+	RPAREN   = ")"
+	LBRACE   = "{"
+	RBRACE   = "}"
+	LBRACKET = "["
+	RBRACKET = "]"
 
 	// Keywords
 	FUNCTION = "FUNCTION"

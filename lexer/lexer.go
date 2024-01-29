@@ -1,6 +1,8 @@
 package lexer
 
-import "boludolang/token"
+import (
+	"boludolang/token"
+)
 
 type Lexer struct {
 	input        string
@@ -63,6 +65,12 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.LPAREN, l.ch)
 	case ')':
 		tok = newToken(token.RPAREN, l.ch)
+	case '[':
+		tok = newToken(token.LBRACKET, l.ch)
+	case ']':
+		tok = newToken(token.RBRACKET, l.ch)
+	case ':':
+		tok = newToken(token.COLON, l.ch)
 	case '"':
 		tok.Type = token.STRING
 		tok.Literal = l.readString()
