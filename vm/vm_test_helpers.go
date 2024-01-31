@@ -69,23 +69,14 @@ func testExpectedObject(t *testing.T, expected interface{}, actual object.Object
 			t.Errorf("object is not String. got=%T (%+v)", actual, actual)
 		}
 	case []int:
-		array, ok := actual.(*object.Array)
-		if !ok {
-			t.Errorf("object is not Array. got=%T (%+v)", actual, actual)
-			return
+		err := testIntArray(expected, actual)
+		if err != nil {
+			t.Errorf("testIntArray failed: %s", err)
 		}
-
-		if len(array.Elements) != len(expected) {
-			t.Errorf("wrong number of elements. got=%d, want=%d",
-				len(array.Elements), len(expected))
-			return
-		}
-
-		for i, integer := range expected {
-			err := testIntegerObject(int64(integer), array.Elements[i])
-			if err != nil {
-				t.Errorf("testIntegerObject failed: %s", err)
-			}
+	case map[object.HashKey]int64:
+		err := testIntHash(expected, actual)
+		if err != nil {
+			t.Errorf("testIntHash failed: %s", err)
 		}
 	}
 }
@@ -130,6 +121,53 @@ func testStringObject(expected string, actual object.Object) error {
 	if result.Value != expected {
 		return fmt.Errorf("object has wrong value. got=%q, want=%q",
 			result.Value, expected)
+	}
+
+	return nil
+}
+
+func testIntArray(expected []int, actual object.Object) error {
+	result, ok := actual.(*object.Array)
+	if !ok {
+		return fmt.Errorf("object is not Array. got=%T (%+v)",
+			actual, actual)
+	}
+
+	if len(result.Elements) != len(expected) {
+		return fmt.Errorf("wrong number of elements. got=%d, want=%d",
+			len(result.Elements), len(expected))
+	}
+
+	for i, integer := range expected {
+		err := testIntegerObject(int64(integer), result.Elements[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func testIntHash(expected map[object.HashKey]int64, actual object.Object) error {
+	result, ok := actual.(*object.Hash)
+	if !ok {
+		return fmt.Errorf("object is not Hash. got=%T (%+v)", actual, actual)
+	}
+
+	if len(result.Pairs) != len(expected) {
+		return fmt.Errorf("wrong number of pairs. got=%d, want=%d", len(result.Pairs), len(expected))
+	}
+
+	for expectedKey, expectedValue := range expected {
+		pair, ok := result.Pairs[expectedKey]
+		if !ok {
+			return fmt.Errorf("no pair for given key in pairs")
+		}
+
+		err := testIntegerObject(expectedValue, pair.Value)
+		if err != nil {
+			return fmt.Errorf("testIntegerObject failed: %s", err)
+		}
 	}
 
 	return nil
