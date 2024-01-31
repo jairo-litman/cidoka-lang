@@ -59,6 +59,10 @@ func testExpectedObject(t *testing.T, expected interface{}, actual object.Object
 		if err != nil {
 			t.Errorf("testBooleanObject failed: %s", err)
 		}
+	case *object.Null:
+		if actual != Null {
+			t.Errorf("object is not Null. got=%T (%+v)", actual, actual)
+		}
 	}
 }
 
