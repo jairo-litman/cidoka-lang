@@ -2,6 +2,7 @@ package repl
 
 import (
 	"boludolang/compiler"
+	"boludolang/evaluator"
 	"boludolang/lexer"
 	"boludolang/object"
 	"boludolang/parser"
@@ -13,12 +14,14 @@ import (
 
 const PROMPT = ">> "
 
-func Start(in io.Reader, out io.Writer) {
+func Start(in io.Reader, out io.Writer, engine string) {
 	scanner := bufio.NewScanner(in)
-	// env := object.NewEnvironment()
+
+	env := object.NewEnvironment()
 
 	constants := []object.Object{}
 	globals := make([]object.Object, vm.GlobalsSize)
+
 	symbolTable := compiler.NewSymbolTable()
 	for i, v := range object.Builtins {
 		symbolTable.DefineBuiltin(i, v.Name)
@@ -41,32 +44,34 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		// evaluated := evaluator.Eval(program, env)
-		// if evaluated != nil {
-		// 	io.WriteString(out, evaluated.Inspect())
-		// 	io.WriteString(out, "\n")
-		// }
+		if engine == "eval" {
+			evaluated := evaluator.Eval(program, env)
+			if evaluated != nil {
+				io.WriteString(out, evaluated.Inspect())
+				io.WriteString(out, "\n")
+			}
+		} else {
+			comp := compiler.NewWithState(symbolTable, constants)
+			err := comp.Compile(program)
+			if err != nil {
+				fmt.Fprintf(out, "Woops! Compilation failed:\n %s\n", err)
+				continue
+			}
 
-		comp := compiler.NewWithState(symbolTable, constants)
-		err := comp.Compile(program)
-		if err != nil {
-			fmt.Fprintf(out, "Woops! Compilation failed:\n %s\n", err)
-			continue
+			code := comp.Bytecode()
+			constants = code.Constants
+
+			machine := vm.NewWithGlobalsStore(code, globals)
+			err = machine.Run()
+			if err != nil {
+				fmt.Fprintf(out, "Woops! Executing bytecode failed:\n %s\n", err)
+				continue
+			}
+
+			lastPopped := machine.LastPoppedStackElem()
+			io.WriteString(out, lastPopped.Inspect())
+			io.WriteString(out, "\n")
 		}
-
-		code := comp.Bytecode()
-		constants = code.Constants
-
-		machine := vm.NewWithGlobalsStore(code, globals)
-		err = machine.Run()
-		if err != nil {
-			fmt.Fprintf(out, "Woops! Executing bytecode failed:\n %s\n", err)
-			continue
-		}
-
-		lastPopped := machine.LastPoppedStackElem()
-		io.WriteString(out, lastPopped.Inspect())
-		io.WriteString(out, "\n")
 	}
 }
 
