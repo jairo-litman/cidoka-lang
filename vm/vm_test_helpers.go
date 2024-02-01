@@ -10,12 +10,12 @@ import (
 	"testing"
 )
 
-type VmTestCase struct {
+type vmTestCase struct {
 	input    string
 	expected interface{}
 }
 
-func runVmTests(t *testing.T, tests []VmTestCase) {
+func runVmTests(t *testing.T, tests []vmTestCase) {
 	t.Helper()
 
 	for _, tt := range tests {

@@ -10,13 +10,13 @@ import (
 	"testing"
 )
 
-type CompilerTestCase struct {
+type compilerTestCase struct {
 	input                string
 	expectedConstants    []interface{}
 	expectedInstructions []code.Instructions
 }
 
-func runCompilerTests(t *testing.T, tests []CompilerTestCase) {
+func runCompilerTests(t *testing.T, tests []compilerTestCase) {
 	t.Helper()
 
 	for _, tt := range tests {
@@ -82,12 +82,22 @@ func testConstants(t *testing.T, expected []interface{}, actual []object.Object)
 		case int:
 			err := testIntegerObject(int64(constant), actual[i])
 			if err != nil {
-				return err
+				return fmt.Errorf("constant %d - testIntegerObject failed: %s", i, err)
 			}
 		case string:
 			err := testStringObject(constant, actual[i])
 			if err != nil {
-				return err
+				return fmt.Errorf("constant %d - testStringObject failed: %s", i, err)
+			}
+		case []code.Instructions:
+			fn, ok := actual[i].(*object.CompiledFunction)
+			if !ok {
+				return fmt.Errorf("constant %d - not a function: %T", i, actual[i])
+			}
+
+			err := testInstructions(constant, fn.Instructions)
+			if err != nil {
+				return fmt.Errorf("constant %d - testInstructions failed: %s", i, err)
 			}
 		}
 	}
