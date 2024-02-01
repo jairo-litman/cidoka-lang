@@ -12,6 +12,15 @@ var (
 	FALSE = &object.Boolean{Value: false}
 )
 
+var builtins = map[string]*object.Builtin{
+	"len":   object.GetBuiltinByName("len"),
+	"print": object.GetBuiltinByName("print"),
+	"first": object.GetBuiltinByName("first"),
+	"last":  object.GetBuiltinByName("last"),
+	"tail":  object.GetBuiltinByName("tail"),
+	"push":  object.GetBuiltinByName("push"),
+}
+
 func Eval(node ast.Node, env *object.Environment) object.Object {
 	switch node := node.(type) {
 
@@ -310,7 +319,10 @@ func applyFunction(fn object.Object, args []object.Object) object.Object {
 		return unwrapReturnValue(evaluated)
 
 	case *object.Builtin:
-		return fn.Fn(args...)
+		if result := fn.Fn(args...); result != nil {
+			return result
+		}
+		return NULL
 
 	default:
 		return newError("not a function: %s", fn.Type())
