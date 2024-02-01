@@ -3,6 +3,7 @@ package ast
 import (
 	"boludolang/token"
 	"bytes"
+	"fmt"
 	"strings"
 )
 
@@ -219,6 +220,7 @@ type FunctionLiteral struct {
 	Token      token.Token // the token.FUNCTION token
 	Parameters []*Identifier
 	Body       *BlockStatement
+	Name       string
 }
 
 func (funcLit *FunctionLiteral) expressionNode()      {}
@@ -233,6 +235,9 @@ func (funcLit *FunctionLiteral) String() string {
 	}
 
 	out.WriteString(funcLit.TokenLiteral())
+	if funcLit.Name != "" {
+		out.WriteString(fmt.Sprintf("<%s>", funcLit.Name))
+	}
 	out.WriteString("(")
 	out.WriteString(strings.Join(params, ", "))
 	out.WriteString(") ")
