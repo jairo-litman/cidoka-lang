@@ -208,6 +208,36 @@ let val = if (comparison) { "Greater than" } else { "less than or equal"};
 val -> "Greater than"
 ```
 
+## Built-in Functions
+
+BoludoLang comes with a few built-in functions which are run in Go. These functions are:
+
+* `len(<array | string>)`
+    - returns the length of an array or string
+* `print(<string>)`
+    - prints the given string to the console
+* `first(<array>)`
+    - returns the first element of an array
+* `last(<array>)`
+    - returns the last element of an array
+* `tail(<array>)`
+    - returns all elements of an array except the first
+* `push(<array>, <element>)`
+    - adds an element to the end of an array
+
+## Missing Features and Possible Improvements
+
+* More types e.g. floats
+* More control flow e.g. loops
+* More operators e.g. %, >=, <=
+* More built-in functions
+* Typing system
+* Better error handling
+* Better REPL
+* More documentation
+* More examples
+* More comments
+
 ## License
 
 This project is licensed under the GNU GENERAL PUBLIC LICENSE V3 License - see the LICENSE file for details
