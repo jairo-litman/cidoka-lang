@@ -31,6 +31,12 @@ func NewSymbolTable() *SymbolTable {
 	return &SymbolTable{store: s, numDefinitions: 0, FreeSymbols: free}
 }
 
+func NewEnclosedSymbolTable(outer *SymbolTable) *SymbolTable {
+	s := NewSymbolTable()
+	s.Outer = outer
+	return s
+}
+
 func (s *SymbolTable) Define(name string) Symbol {
 	symbol := Symbol{Name: name, Index: s.numDefinitions}
 
@@ -65,14 +71,14 @@ func (s *SymbolTable) Resolve(name string) (Symbol, bool) {
 	return obj, ok
 }
 
-func NewEnclosedSymbolTable(outer *SymbolTable) *SymbolTable {
-	s := NewSymbolTable()
-	s.Outer = outer
-	return s
-}
-
 func (s *SymbolTable) DefineBuiltin(index int, name string) Symbol {
 	symbol := Symbol{Name: name, Index: index, Scope: BuiltinScope}
+	s.store[name] = symbol
+	return symbol
+}
+
+func (s *SymbolTable) DefineFunctionName(name string) Symbol {
+	symbol := Symbol{Name: name, Index: 0, Scope: FunctionScope}
 	s.store[name] = symbol
 	return symbol
 }
@@ -84,11 +90,5 @@ func (s *SymbolTable) defineFree(original Symbol) Symbol {
 	symbol.Scope = FreeScope
 
 	s.store[original.Name] = symbol
-	return symbol
-}
-
-func (s *SymbolTable) DefineFunctionName(name string) Symbol {
-	symbol := Symbol{Name: name, Index: 0, Scope: FunctionScope}
-	s.store[name] = symbol
 	return symbol
 }

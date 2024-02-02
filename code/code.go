@@ -33,8 +33,7 @@ func (ins Instructions) fmtInstruction(def *Definition, operands []int) string {
 	operandCount := len(def.OperandWidths)
 
 	if len(operands) != operandCount {
-		return fmt.Sprintf("ERROR: operand len %d does not match defined %d\n",
-			len(operands), operandCount)
+		return fmt.Sprintf("ERROR: operand len %d does not match defined %d\n", len(operands), operandCount)
 	}
 
 	switch operandCount {
@@ -54,6 +53,7 @@ type Opcode byte
 const (
 	OpConstant Opcode = iota
 	OpPop
+	OpNull
 
 	OpAdd
 	OpSub
@@ -73,22 +73,19 @@ const (
 	OpJumpNotTruthy
 	OpJump
 
-	OpNull
-
 	OpSetGlobal
 	OpGetGlobal
 
+	OpSetLocal
+	OpGetLocal
+
 	OpArray
 	OpHash
-
 	OpIndex
 
 	OpCall
 	OpReturnValue
 	OpReturn
-
-	OpGetLocal
-	OpSetLocal
 
 	OpGetBuiltin
 
@@ -106,6 +103,7 @@ type Definition struct {
 var definitions = map[Opcode]*Definition{
 	OpConstant: {"OpConstant", []int{2}},
 	OpPop:      {"OpPop", []int{}},
+	OpNull:     {"OpNull", []int{}},
 
 	OpAdd: {"OpAdd", []int{}},
 	OpSub: {"OpSub", []int{}},
@@ -125,22 +123,19 @@ var definitions = map[Opcode]*Definition{
 	OpJumpNotTruthy: {"OpJumpNotTruthy", []int{2}},
 	OpJump:          {"OpJump", []int{2}},
 
-	OpNull: {"OpNull", []int{}},
-
 	OpSetGlobal: {"OpSetGlobal", []int{2}},
 	OpGetGlobal: {"OpGetGlobal", []int{2}},
 
+	OpSetLocal: {"OpSetLocal", []int{1}},
+	OpGetLocal: {"OpGetLocal", []int{1}},
+
 	OpArray: {"OpArray", []int{2}},
 	OpHash:  {"OpHash", []int{2}},
-
 	OpIndex: {"OpIndex", []int{}},
 
 	OpCall:        {"OpCall", []int{1}},
 	OpReturnValue: {"OpReturnValue", []int{}},
 	OpReturn:      {"OpReturn", []int{}},
-
-	OpGetLocal: {"OpGetLocal", []int{1}},
-	OpSetLocal: {"OpSetLocal", []int{1}},
 
 	OpGetBuiltin: {"OpGetBuiltin", []int{1}},
 

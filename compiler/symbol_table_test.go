@@ -279,10 +279,12 @@ func TestResolveUnresolvableFree(t *testing.T) {
 			t.Errorf("expected %s to resolve to %+v, got=%+v", sym.Name, sym, result)
 		}
 	}
+
 	expectedUnresolvable := []string{
 		"b",
 		"d",
 	}
+
 	for _, name := range expectedUnresolvable {
 		_, ok := secondLocal.Resolve(name)
 		if ok {

@@ -28,11 +28,11 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.Program:
 		return evalProgram(node, env)
 
-	case *ast.ExpressionStatement:
-		return Eval(node.Expression, env)
-
 	case *ast.BlockStatement:
 		return evalBlockStatement(node, env)
+
+	case *ast.ExpressionStatement:
+		return Eval(node.Expression, env)
 
 	case *ast.ReturnStatement:
 		val := Eval(node.ReturnValue, env)
@@ -51,6 +51,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	// Expressions
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
+
+	case *ast.StringLiteral:
+		return &object.String{Value: node.Value}
 
 	case *ast.Boolean:
 		return nativeBoolToBooleanObject(node.Value)
@@ -98,15 +101,15 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 		return applyFunction(function, args)
 
-	case *ast.StringLiteral:
-		return &object.String{Value: node.Value}
-
 	case *ast.ArrayLiteral:
 		elements := evalExpressions(node.Elements, env)
 		if len(elements) == 1 && isError(elements[0]) {
 			return elements[0]
 		}
 		return &object.Array{Elements: elements}
+
+	case *ast.HashLiteral:
+		return evalHashLiteral(node, env)
 
 	case *ast.IndexExpression:
 		left := Eval(node.Left, env)
@@ -118,9 +121,6 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return index
 		}
 		return evalIndexExpression(left, index)
-
-	case *ast.HashLiteral:
-		return evalHashLiteral(node, env)
 	}
 
 	return nil
@@ -184,14 +184,14 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 	switch {
 	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 		return evalIntegerInfixExpression(operator, left, right)
+	case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
+		return evalStringInfixExpression(operator, left, right)
 	case operator == "==":
 		return nativeBoolToBooleanObject(left == right)
 	case operator == "!=":
 		return nativeBoolToBooleanObject(left != right)
 	case left.Type() != right.Type():
 		return newError("type mismatch: %s %s %s", left.Type(), operator, right.Type())
-	case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
-		return evalStringInfixExpression(operator, left, right)
 	default:
 		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}
@@ -243,6 +243,16 @@ func evalIntegerInfixExpression(operator string, left, right object.Object) obje
 	default:
 		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}
+}
+
+func evalStringInfixExpression(operator string, left, right object.Object) object.Object {
+	if operator != "+" {
+		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
+	}
+
+	leftVal := left.(*object.String).Value
+	rightVal := right.(*object.String).Value
+	return &object.String{Value: leftVal + rightVal}
 }
 
 func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Object {
@@ -344,16 +354,6 @@ func unwrapReturnValue(obj object.Object) object.Object {
 	}
 
 	return obj
-}
-
-func evalStringInfixExpression(operator string, left, right object.Object) object.Object {
-	if operator != "+" {
-		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
-	}
-
-	leftVal := left.(*object.String).Value
-	rightVal := right.(*object.String).Value
-	return &object.String{Value: leftVal + rightVal}
 }
 
 func evalIndexExpression(left, index object.Object) object.Object {

@@ -83,6 +83,12 @@ func (vm *VM) Run() error {
 		case code.OpPop:
 			vm.pop()
 
+		case code.OpNull:
+			err := vm.push(Null)
+			if err != nil {
+				return err
+			}
+
 		case code.OpAdd, code.OpSub, code.OpMul, code.OpDiv:
 			err := vm.executeBinaryOperation(op)
 			if err != nil {
@@ -107,21 +113,17 @@ func (vm *VM) Run() error {
 				return err
 			}
 
-		case code.OpBang:
-			err := vm.executeBangOperator()
-			if err != nil {
-				return err
-			}
-
 		case code.OpMinus:
 			err := vm.executeMinusOperator()
 			if err != nil {
 				return err
 			}
 
-		case code.OpJump:
-			pos := int(code.ReadUint16(ins[ip+1:]))
-			vm.currentFrame().ip = pos - 1
+		case code.OpBang:
+			err := vm.executeBangOperator()
+			if err != nil {
+				return err
+			}
 
 		case code.OpJumpNotTruthy:
 			pos := int(code.ReadUint16(ins[ip+1:]))
@@ -132,11 +134,9 @@ func (vm *VM) Run() error {
 				vm.currentFrame().ip = pos - 1
 			}
 
-		case code.OpNull:
-			err := vm.push(Null)
-			if err != nil {
-				return err
-			}
+		case code.OpJump:
+			pos := int(code.ReadUint16(ins[ip+1:]))
+			vm.currentFrame().ip = pos - 1
 
 		case code.OpSetGlobal:
 			globalIndex := code.ReadUint16(ins[ip+1:])
@@ -149,6 +149,25 @@ func (vm *VM) Run() error {
 			vm.currentFrame().ip += 2
 
 			err := vm.push(vm.globals[globalIndex])
+			if err != nil {
+				return err
+			}
+
+		case code.OpSetLocal:
+			localIndex := code.ReadUint8(ins[ip+1:])
+			vm.currentFrame().ip++
+
+			frame := vm.currentFrame()
+
+			vm.stack[frame.basePointer+int(localIndex)] = vm.pop()
+
+		case code.OpGetLocal:
+			localIndex := code.ReadUint8(ins[ip+1:])
+			vm.currentFrame().ip++
+
+			frame := vm.currentFrame()
+
+			err := vm.push(vm.stack[frame.basePointer+int(localIndex)])
 			if err != nil {
 				return err
 			}
@@ -215,25 +234,6 @@ func (vm *VM) Run() error {
 			vm.sp = frame.basePointer - 1
 
 			err := vm.push(Null)
-			if err != nil {
-				return err
-			}
-
-		case code.OpSetLocal:
-			localIndex := code.ReadUint8(ins[ip+1:])
-			vm.currentFrame().ip++
-
-			frame := vm.currentFrame()
-
-			vm.stack[frame.basePointer+int(localIndex)] = vm.pop()
-
-		case code.OpGetLocal:
-			localIndex := code.ReadUint8(ins[ip+1:])
-			vm.currentFrame().ip++
-
-			frame := vm.currentFrame()
-
-			err := vm.push(vm.stack[frame.basePointer+int(localIndex)])
 			if err != nil {
 				return err
 			}

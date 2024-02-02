@@ -47,14 +47,7 @@ func (prog *Program) String() string {
 	return out.String()
 }
 
-type Identifier struct {
-	Token token.Token // the token.IDENT token
-	Value string
-}
-
-func (ident *Identifier) expressionNode()      {}
-func (ident *Identifier) TokenLiteral() string { return ident.Token.Literal }
-func (ident *Identifier) String() string       { return ident.Value }
+// Statements
 
 type LetStatement struct {
 	Token token.Token // the token.LET token
@@ -111,10 +104,46 @@ func (exprStmt *ExpressionStatement) TokenLiteral() string { return exprStmt.Tok
 func (exprStmt *ExpressionStatement) String() string {
 	if exprStmt.Expression != nil {
 		return exprStmt.Expression.String()
-	} else {
-		return ""
 	}
+	return ""
 }
+
+type BlockStatement struct {
+	Token      token.Token // the token.LBRACE token '{'
+	Statements []Statement
+}
+
+func (blockStmt *BlockStatement) statementNode()       {}
+func (blockStmt *BlockStatement) TokenLiteral() string { return blockStmt.Token.Literal }
+func (blockStmt *BlockStatement) String() string {
+	var out bytes.Buffer
+
+	for _, stmt := range blockStmt.Statements {
+		out.WriteString(stmt.String())
+	}
+
+	return out.String()
+}
+
+// Expressions
+
+type Identifier struct {
+	Token token.Token // the token.IDENT token
+	Value string
+}
+
+func (ident *Identifier) expressionNode()      {}
+func (ident *Identifier) TokenLiteral() string { return ident.Token.Literal }
+func (ident *Identifier) String() string       { return ident.Value }
+
+type Boolean struct {
+	Token token.Token // the token.TRUE or token.FALSE token
+	Value bool
+}
+
+func (boolExpr *Boolean) expressionNode()      {}
+func (boolExpr *Boolean) TokenLiteral() string { return boolExpr.Token.Literal }
+func (boolExpr *Boolean) String() string       { return boolExpr.Token.Literal }
 
 type IntegerLiteral struct {
 	Token token.Token // the token.INT token
@@ -165,32 +194,6 @@ func (infixExpr *InfixExpression) String() string {
 	return out.String()
 }
 
-type Boolean struct {
-	Token token.Token // the token.TRUE or token.FALSE token
-	Value bool
-}
-
-func (boolExpr *Boolean) expressionNode()      {}
-func (boolExpr *Boolean) TokenLiteral() string { return boolExpr.Token.Literal }
-func (boolExpr *Boolean) String() string       { return boolExpr.Token.Literal }
-
-type BlockStatement struct {
-	Token      token.Token // the token.LBRACE token
-	Statements []Statement
-}
-
-func (blockStmt *BlockStatement) statementNode()       {}
-func (blockStmt *BlockStatement) TokenLiteral() string { return blockStmt.Token.Literal }
-func (blockStmt *BlockStatement) String() string {
-	var out bytes.Buffer
-
-	for _, stmt := range blockStmt.Statements {
-		out.WriteString(stmt.String())
-	}
-
-	return out.String()
-}
-
 type IfExpression struct {
 	Token       token.Token // the token.IF token
 	Condition   Expression
@@ -229,7 +232,6 @@ func (funcLit *FunctionLiteral) String() string {
 	var out bytes.Buffer
 
 	params := []string{}
-
 	for _, param := range funcLit.Parameters {
 		params = append(params, param.String())
 	}
@@ -258,7 +260,6 @@ func (callExpr *CallExpression) String() string {
 	var out bytes.Buffer
 
 	args := []string{}
-
 	for _, arg := range callExpr.Arguments {
 		args = append(args, arg.String())
 	}
@@ -281,7 +282,7 @@ func (strLit *StringLiteral) TokenLiteral() string { return strLit.Token.Literal
 func (strLit *StringLiteral) String() string       { return strLit.Token.Literal }
 
 type ArrayLiteral struct {
-	Token    token.Token // the token.LBRACKET token
+	Token    token.Token // the token.LBRACKET token '['
 	Elements []Expression
 }
 
@@ -303,7 +304,7 @@ func (arrLit *ArrayLiteral) String() string {
 }
 
 type IndexExpression struct {
-	Token token.Token // the token.LBRACKET token
+	Token token.Token // the token.LBRACKET token '['
 	Left  Expression
 	Index Expression
 }
@@ -323,7 +324,7 @@ func (indexExpr *IndexExpression) String() string {
 }
 
 type HashLiteral struct {
-	Token token.Token // the token.LBRACE token
+	Token token.Token // the token.LBRACE token '{'
 	Pairs map[Expression]Expression
 }
 

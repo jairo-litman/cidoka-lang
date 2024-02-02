@@ -18,6 +18,7 @@ func TestMake(t *testing.T) {
 
 	for _, tt := range tests {
 		instruction := Make(tt.Op, tt.Operands...)
+
 		if len(instruction) != len(tt.Expected) {
 			t.Errorf("wrong instruction length. want=%d, got=%d", len(tt.Expected), len(instruction))
 		}
