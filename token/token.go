@@ -3,63 +3,64 @@ package token
 type TokenType string
 
 const (
-	ILLEGAL = "ILLEGAL" // unknown token
-	EOF     = "EOF"     // end of file
+	ILLEGAL TokenType = "ILLEGAL" // unknown token
+	EOF     TokenType = "EOF"     // end of file
 
 	// Identifiers + literals
-	IDENT  = "IDENT"  // add, foobar, x, y, ...
-	INT    = "INT"    // 1234567890
-	STRING = "STRING" // "foobar"
+	IDENT  TokenType = "IDENT"  // add, foobar, x, y, ...
+	INT    TokenType = "INT"    // 1234567890
+	FLOAT  TokenType = "FLOAT"  // 123.456
+	STRING TokenType = "STRING" // "foobar"
 
 	// Assignment operators
-	ASSIGN      = "="
-	PLUS_EQ     = "+="
-	MINUS_EQ    = "-="
-	ASTERISK_EQ = "*="
-	SLASH_EQ    = "/="
-	MODULO_EQ   = "%=" // todo
+	ASSIGN      TokenType = "="
+	PLUS_EQ     TokenType = "+="
+	MINUS_EQ    TokenType = "-="
+	ASTERISK_EQ TokenType = "*="
+	SLASH_EQ    TokenType = "/="
+	MODULO_EQ   TokenType = "%=" // todo
 
 	// Arithmetic operators
-	PLUS     = "+"
-	MINUS    = "-"
-	ASTERISK = "*"
-	SLASH    = "/"
-	MODULO   = "%" // todo
+	PLUS     TokenType = "+"
+	MINUS    TokenType = "-"
+	ASTERISK TokenType = "*"
+	SLASH    TokenType = "/"
+	MODULO   TokenType = "%" // todo
 
 	// Comparison operators
-	EQ     = "=="
-	NOT_EQ = "!="
-	LT     = "<"
-	LT_EQ  = "<=" // todo
-	GT     = ">"
-	GT_EQ  = ">=" // todo
+	EQ     TokenType = "=="
+	NOT_EQ TokenType = "!="
+	LT     TokenType = "<"
+	LT_EQ  TokenType = "<=" // todo
+	GT     TokenType = ">"
+	GT_EQ  TokenType = ">=" // todo
 
 	// Logical operators
-	AND  = "&&" // todo
-	OR   = "||" // todo
-	BANG = "!"
+	AND  TokenType = "&&" // todo
+	OR   TokenType = "||" // todo
+	BANG TokenType = "!"
 
 	// Delimiters
-	COMMA     = ","
-	SEMICOLON = ";"
-	COLON     = ":"
+	COMMA     TokenType = ","
+	SEMICOLON TokenType = ";"
+	COLON     TokenType = ":"
 
 	// Brackets
-	LPAREN   = "("
-	RPAREN   = ")"
-	LBRACE   = "{"
-	RBRACE   = "}"
-	LBRACKET = "["
-	RBRACKET = "]"
+	LPAREN   TokenType = "("
+	RPAREN   TokenType = ")"
+	LBRACE   TokenType = "{"
+	RBRACE   TokenType = "}"
+	LBRACKET TokenType = "["
+	RBRACKET TokenType = "]"
 
 	// Keywords
-	FUNCTION = "FUNCTION"
-	LET      = "LET"
-	TRUE     = "TRUE"
-	FALSE    = "FALSE"
-	IF       = "IF"
-	ELSE     = "ELSE"
-	RETURN   = "RETURN"
+	FUNCTION TokenType = "FUNCTION"
+	LET      TokenType = "LET"
+	TRUE     TokenType = "TRUE"
+	FALSE    TokenType = "FALSE"
+	IF       TokenType = "IF"
+	ELSE     TokenType = "ELSE"
+	RETURN   TokenType = "RETURN"
 )
 
 type Token struct {

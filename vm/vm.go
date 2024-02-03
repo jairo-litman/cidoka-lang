@@ -5,11 +5,14 @@ import (
 	"boludolang/compiler"
 	"boludolang/object"
 	"fmt"
+	"math"
 )
 
 const StackSize = 2048
 const GlobalsSize = 65536
 const MaxFrames = 1024
+
+const float64EqualityThreshold = 1e-9
 
 var True = &object.Boolean{Value: true}
 var False = &object.Boolean{Value: false}
@@ -328,6 +331,8 @@ func (vm *VM) executeBinaryOperation(op code.Opcode) error {
 	switch {
 	case leftType == object.INTEGER_OBJ && rightType == object.INTEGER_OBJ:
 		return vm.executeBinaryIntegerOperation(op, left, right)
+	case leftType == object.FLOAT_OBJ && rightType == object.FLOAT_OBJ:
+		return vm.executeBinaryFloatOperation(op, left, right)
 	case leftType == object.STRING_OBJ && rightType == object.STRING_OBJ:
 		return vm.executeBinaryStringOperation(op, left, right)
 	default:
@@ -356,6 +361,27 @@ func (vm *VM) executeBinaryIntegerOperation(op code.Opcode, left, right object.O
 	return vm.push(&object.Integer{Value: result})
 }
 
+func (vm *VM) executeBinaryFloatOperation(op code.Opcode, left, right object.Object) error {
+	leftVal := left.(*object.Float).Value
+	rightVal := right.(*object.Float).Value
+
+	var result float64
+	switch op {
+	case code.OpAdd:
+		result = leftVal + rightVal
+	case code.OpSub:
+		result = leftVal - rightVal
+	case code.OpMul:
+		result = leftVal * rightVal
+	case code.OpDiv:
+		result = leftVal / rightVal
+	default:
+		return fmt.Errorf("unknown float operator: %d", op)
+	}
+
+	return vm.push(&object.Float{Value: result})
+}
+
 func (vm *VM) executeBinaryStringOperation(op code.Opcode, left, right object.Object) error {
 	leftVal := left.(*object.String).Value
 	rightVal := right.(*object.String).Value
@@ -378,8 +404,11 @@ func (vm *VM) executeComparison(op code.Opcode) error {
 	leftType := left.Type()
 	rightType := right.Type()
 
-	if leftType == object.INTEGER_OBJ && rightType == object.INTEGER_OBJ {
+	switch {
+	case leftType == object.INTEGER_OBJ && rightType == object.INTEGER_OBJ:
 		return vm.executeIntegerComparison(op, left, right)
+	case leftType == object.FLOAT_OBJ && rightType == object.FLOAT_OBJ:
+		return vm.executeFloatComparison(op, left, right)
 	}
 
 	switch op {
@@ -408,6 +437,24 @@ func (vm *VM) executeIntegerComparison(op code.Opcode, left, right object.Object
 	}
 }
 
+func (vm *VM) executeFloatComparison(op code.Opcode, left, right object.Object) error {
+	leftVal := left.(*object.Float).Value
+	rightVal := right.(*object.Float).Value
+
+	comparisonValue := math.Abs(leftVal-rightVal) <= float64EqualityThreshold
+
+	switch op {
+	case code.OpEqual:
+		return vm.push(nativeBoolToBooleanObject(comparisonValue))
+	case code.OpNotEqual:
+		return vm.push(nativeBoolToBooleanObject(!comparisonValue))
+	case code.OpGreaterThan:
+		return vm.push(nativeBoolToBooleanObject(leftVal > rightVal))
+	default:
+		return fmt.Errorf("unknown float operator: %d", op)
+	}
+}
+
 func (vm *VM) executeBangOperator() error {
 	operand := vm.pop()
 
@@ -425,12 +472,16 @@ func (vm *VM) executeBangOperator() error {
 
 func (vm *VM) executeMinusOperator() error {
 	operand := vm.pop()
-	if operand.Type() != object.INTEGER_OBJ {
+	switch operand.Type() {
+	case object.INTEGER_OBJ:
+		value := operand.(*object.Integer).Value
+		return vm.push(&object.Integer{Value: -value})
+	case object.FLOAT_OBJ:
+		value := operand.(*object.Float).Value
+		return vm.push(&object.Float{Value: -value})
+	default:
 		return fmt.Errorf("unsupported type for negation: %s", operand.Type())
 	}
-
-	value := operand.(*object.Integer).Value
-	return vm.push(&object.Integer{Value: -value})
 }
 
 func nativeBoolToBooleanObject(input bool) *object.Boolean {

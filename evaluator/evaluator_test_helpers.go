@@ -4,6 +4,7 @@ import (
 	"boludolang/lexer"
 	"boludolang/object"
 	"boludolang/parser"
+	"math"
 	"testing"
 )
 
@@ -49,6 +50,22 @@ func testBooleanObject(t *testing.T, obj object.Object, expected bool) bool {
 func testNullObject(t *testing.T, obj object.Object) bool {
 	if obj != NULL {
 		t.Errorf("object is not NULL. got=%T (%+v)", obj, obj)
+		return false
+	}
+
+	return true
+}
+
+func testFloatObject(t *testing.T, obj object.Object, expected float64) bool {
+	result, ok := obj.(*object.Float)
+	if !ok {
+		t.Errorf("object is not Float. got=%T (%+v)", obj, obj)
+		return false
+	}
+
+	comparisonValue := math.Abs(expected-result.Value) <= float64EqualityThreshold
+	if !comparisonValue {
+		t.Errorf("object has wrong value. got=%f, want=%f", result.Value, expected)
 		return false
 	}
 

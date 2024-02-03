@@ -57,29 +57,36 @@ func New(lex *lexer.Lexer) *Parser {
 		errors: []string{},
 	}
 
+	// Prefix parse functions
 	parser.prefixParseFns = make(map[token.TokenType]prefixParseFn)
 	parser.registerPrefix(token.IDENT, parser.parseIdentifier)
 	parser.registerPrefix(token.INT, parser.parseIntegerLiteral)
-	parser.registerPrefix(token.BANG, parser.parsePrefixExpression)
-	parser.registerPrefix(token.MINUS, parser.parsePrefixExpression)
+	parser.registerPrefix(token.FLOAT, parser.parseFloatLiteral)
 	parser.registerPrefix(token.TRUE, parser.parseBoolean)
 	parser.registerPrefix(token.FALSE, parser.parseBoolean)
-	parser.registerPrefix(token.LPAREN, parser.parseGroupedExpression)
+	parser.registerPrefix(token.STRING, parser.parseStringLiteral)
+
+	parser.registerPrefix(token.BANG, parser.parsePrefixExpression)
+	parser.registerPrefix(token.MINUS, parser.parsePrefixExpression)
+
 	parser.registerPrefix(token.IF, parser.parseIfExpression)
 	parser.registerPrefix(token.FUNCTION, parser.parseFunctionLiteral)
-	parser.registerPrefix(token.STRING, parser.parseStringLiteral)
+	parser.registerPrefix(token.LPAREN, parser.parseGroupedExpression)
 	parser.registerPrefix(token.LBRACKET, parser.parseArrayLiteral)
 	parser.registerPrefix(token.LBRACE, parser.parseHashLiteral)
 
+	// Infix parse functions
 	parser.infixParseFns = make(map[token.TokenType]infixParseFn)
 	parser.registerInfix(token.PLUS, parser.parseInfixExpression)
 	parser.registerInfix(token.MINUS, parser.parseInfixExpression)
 	parser.registerInfix(token.SLASH, parser.parseInfixExpression)
 	parser.registerInfix(token.ASTERISK, parser.parseInfixExpression)
+
 	parser.registerInfix(token.EQ, parser.parseInfixExpression)
 	parser.registerInfix(token.NOT_EQ, parser.parseInfixExpression)
 	parser.registerInfix(token.LT, parser.parseInfixExpression)
 	parser.registerInfix(token.GT, parser.parseInfixExpression)
+
 	parser.registerInfix(token.LPAREN, parser.parseCallExpression)
 	parser.registerInfix(token.LBRACKET, parser.parseIndexExpression)
 
@@ -145,6 +152,8 @@ func (parser *Parser) ParseProgram() *ast.Program {
 
 	return program
 }
+
+// Statements
 
 func (parser *Parser) parseStatement() ast.Statement {
 	switch parser.curToken.Type {
@@ -215,6 +224,8 @@ func (parser *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	return stmt
 }
 
+// Expressions
+
 func (parser *Parser) parseExpression(precedence int) ast.Expression {
 	prefix := parser.prefixParseFns[parser.curToken.Type]
 	if prefix == nil {
@@ -256,6 +267,29 @@ func (parser *Parser) parseIntegerLiteral() ast.Expression {
 	return lit
 }
 
+func (parser *Parser) parseFloatLiteral() ast.Expression {
+	lit := &ast.FloatLiteral{Token: parser.curToken}
+
+	value, err := strconv.ParseFloat(parser.curToken.Literal, 64)
+	if err != nil {
+		msg := fmt.Sprintf("could not parse %q as float", parser.curToken.Literal)
+		parser.errors = append(parser.errors, msg)
+		return nil
+	}
+
+	lit.Value = value
+
+	return lit
+}
+
+func (parser *Parser) parseBoolean() ast.Expression {
+	return &ast.Boolean{Token: parser.curToken, Value: parser.curTokenIs(token.TRUE)}
+}
+
+func (parser *Parser) parseStringLiteral() ast.Expression {
+	return &ast.StringLiteral{Token: parser.curToken, Value: parser.curToken.Literal}
+}
+
 func (parser *Parser) parsePrefixExpression() ast.Expression {
 	expression := &ast.PrefixExpression{
 		Token:    parser.curToken,
@@ -281,10 +315,6 @@ func (parser *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	expression.Right = parser.parseExpression(precedence)
 
 	return expression
-}
-
-func (parser *Parser) parseBoolean() ast.Expression {
-	return &ast.Boolean{Token: parser.curToken, Value: parser.curTokenIs(token.TRUE)}
 }
 
 func (parser *Parser) parseGroupedExpression() ast.Expression {
@@ -399,10 +429,6 @@ func (parser *Parser) parseCallExpression(function ast.Expression) ast.Expressio
 	exp := &ast.CallExpression{Token: parser.curToken, Function: function}
 	exp.Arguments = parser.parseExpressionList(token.RPAREN)
 	return exp
-}
-
-func (parser *Parser) parseStringLiteral() ast.Expression {
-	return &ast.StringLiteral{Token: parser.curToken, Value: parser.curToken.Literal}
 }
 
 func (parser *Parser) parseArrayLiteral() ast.Expression {

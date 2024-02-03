@@ -136,6 +136,24 @@ func (ident *Identifier) expressionNode()      {}
 func (ident *Identifier) TokenLiteral() string { return ident.Token.Literal }
 func (ident *Identifier) String() string       { return ident.Value }
 
+type IntegerLiteral struct {
+	Token token.Token // the token.INT token
+	Value int64
+}
+
+func (intLit *IntegerLiteral) expressionNode()      {}
+func (intLit *IntegerLiteral) TokenLiteral() string { return intLit.Token.Literal }
+func (intLit *IntegerLiteral) String() string       { return intLit.Token.Literal }
+
+type FloatLiteral struct {
+	Token token.Token // the token.FLOAT token
+	Value float64
+}
+
+func (floatLit *FloatLiteral) expressionNode()      {}
+func (floatLit *FloatLiteral) TokenLiteral() string { return floatLit.Token.Literal }
+func (floatLit *FloatLiteral) String() string       { return floatLit.Token.Literal }
+
 type Boolean struct {
 	Token token.Token // the token.TRUE or token.FALSE token
 	Value bool
@@ -145,14 +163,14 @@ func (boolExpr *Boolean) expressionNode()      {}
 func (boolExpr *Boolean) TokenLiteral() string { return boolExpr.Token.Literal }
 func (boolExpr *Boolean) String() string       { return boolExpr.Token.Literal }
 
-type IntegerLiteral struct {
-	Token token.Token // the token.INT token
-	Value int64
+type StringLiteral struct {
+	Token token.Token // the token.STRING token
+	Value string
 }
 
-func (intLit *IntegerLiteral) expressionNode()      {}
-func (intLit *IntegerLiteral) TokenLiteral() string { return intLit.Token.Literal }
-func (intLit *IntegerLiteral) String() string       { return intLit.Token.Literal }
+func (strLit *StringLiteral) expressionNode()      {}
+func (strLit *StringLiteral) TokenLiteral() string { return strLit.Token.Literal }
+func (strLit *StringLiteral) String() string       { return strLit.Token.Literal }
 
 type PrefixExpression struct {
 	Token    token.Token // the prefix token, e.g. !
@@ -272,15 +290,6 @@ func (callExpr *CallExpression) String() string {
 	return out.String()
 }
 
-type StringLiteral struct {
-	Token token.Token // the token.STRING token
-	Value string
-}
-
-func (strLit *StringLiteral) expressionNode()      {}
-func (strLit *StringLiteral) TokenLiteral() string { return strLit.Token.Literal }
-func (strLit *StringLiteral) String() string       { return strLit.Token.Literal }
-
 type ArrayLiteral struct {
 	Token    token.Token // the token.LBRACKET token '['
 	Elements []Expression
@@ -303,26 +312,6 @@ func (arrLit *ArrayLiteral) String() string {
 	return out.String()
 }
 
-type IndexExpression struct {
-	Token token.Token // the token.LBRACKET token '['
-	Left  Expression
-	Index Expression
-}
-
-func (indexExpr *IndexExpression) expressionNode()      {}
-func (indexExpr *IndexExpression) TokenLiteral() string { return indexExpr.Token.Literal }
-func (indexExpr *IndexExpression) String() string {
-	var out bytes.Buffer
-
-	out.WriteString("(")
-	out.WriteString(indexExpr.Left.String())
-	out.WriteString("[")
-	out.WriteString(indexExpr.Index.String())
-	out.WriteString("])")
-
-	return out.String()
-}
-
 type HashLiteral struct {
 	Token token.Token // the token.LBRACE token '{'
 	Pairs map[Expression]Expression
@@ -341,6 +330,26 @@ func (hashLit *HashLiteral) String() string {
 	out.WriteString("{")
 	out.WriteString(strings.Join(pairs, ", "))
 	out.WriteString("}")
+
+	return out.String()
+}
+
+type IndexExpression struct {
+	Token token.Token // the token.LBRACKET token '['
+	Left  Expression
+	Index Expression
+}
+
+func (indexExpr *IndexExpression) expressionNode()      {}
+func (indexExpr *IndexExpression) TokenLiteral() string { return indexExpr.Token.Literal }
+func (indexExpr *IndexExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(indexExpr.Left.String())
+	out.WriteString("[")
+	out.WriteString(indexExpr.Index.String())
+	out.WriteString("])")
 
 	return out.String()
 }

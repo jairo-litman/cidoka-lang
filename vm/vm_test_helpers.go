@@ -7,6 +7,7 @@ import (
 	"boludolang/object"
 	"boludolang/parser"
 	"fmt"
+	"math"
 	"testing"
 )
 
@@ -27,7 +28,7 @@ func runVmTests(t *testing.T, tests []vmTestCase) {
 			t.Fatalf("compiler error: %s", err)
 		}
 
-		// bytecode dumper
+		// // constants bytecode dumper
 		// for i, constant := range comp.Bytecode().Constants {
 		// 	fmt.Printf("CONSTANT %d %p (%T):\n", i, constant, constant)
 
@@ -36,6 +37,20 @@ func runVmTests(t *testing.T, tests []vmTestCase) {
 		// 		fmt.Printf(" Instructions:\n%s", constant.Instructions)
 		// 	case *object.Integer:
 		// 		fmt.Printf(" Value: %d\n", constant.Value)
+		// 	case *object.String:
+		// 		fmt.Printf(" Value: %q\n", constant.Value)
+		// 	case *object.Array:
+		// 		fmt.Printf(" Elements:\n")
+		// 		for _, e := range constant.Elements {
+		// 			fmt.Printf("  %p (%T)\n", e, e)
+		// 		}
+		// 	case *object.Hash:
+		// 		fmt.Printf(" Pairs:\n")
+		// 		for k, v := range constant.Pairs {
+		// 			fmt.Printf("  %p (%T) -> %p (%T)\n", &k.Value, k, &v.Value, v)
+		// 		}
+		// 	case *object.Float:
+		// 		fmt.Printf(" Value: %f\n", constant.Value)
 		// 	}
 
 		// 	fmt.Printf("\n")
@@ -102,19 +117,27 @@ func testExpectedObject(t *testing.T, expected interface{}, actual object.Object
 			t.Errorf("wrong error message. expected=%q, got=%q",
 				expected.Message, errObj.Message)
 		}
+	case float64:
+		err := testFloatObject(expected, actual)
+		if err != nil {
+			t.Errorf("testFloatObject failed: %s", err)
+		}
+	case float32:
+		err := testFloatObject(float64(expected), actual)
+		if err != nil {
+			t.Errorf("testFloatObject failed: %s", err)
+		}
 	}
 }
 
 func testIntegerObject(expected int64, actual object.Object) error {
 	result, ok := actual.(*object.Integer)
 	if !ok {
-		return fmt.Errorf("object is not Integer. got=%T (%+v)",
-			actual, actual)
+		return fmt.Errorf("object is not Integer. got=%T (%+v)", actual, actual)
 	}
 
 	if result.Value != expected {
-		return fmt.Errorf("object has wrong value. got=%d, want=%d",
-			result.Value, expected)
+		return fmt.Errorf("object has wrong value. got=%d, want=%d", result.Value, expected)
 	}
 
 	return nil
@@ -123,13 +146,11 @@ func testIntegerObject(expected int64, actual object.Object) error {
 func testBooleanObject(expected bool, actual object.Object) error {
 	result, ok := actual.(*object.Boolean)
 	if !ok {
-		return fmt.Errorf("object is not Boolean. got=%T (%+v)",
-			actual, actual)
+		return fmt.Errorf("object is not Boolean. got=%T (%+v)", actual, actual)
 	}
 
 	if result.Value != expected {
-		return fmt.Errorf("object has wrong value. got=%t, want=%t",
-			result.Value, expected)
+		return fmt.Errorf("object has wrong value. got=%t, want=%t", result.Value, expected)
 	}
 
 	return nil
@@ -138,13 +159,11 @@ func testBooleanObject(expected bool, actual object.Object) error {
 func testStringObject(expected string, actual object.Object) error {
 	result, ok := actual.(*object.String)
 	if !ok {
-		return fmt.Errorf("object is not String. got=%T (%+v)",
-			actual, actual)
+		return fmt.Errorf("object is not String. got=%T (%+v)", actual, actual)
 	}
 
 	if result.Value != expected {
-		return fmt.Errorf("object has wrong value. got=%q, want=%q",
-			result.Value, expected)
+		return fmt.Errorf("object has wrong value. got=%q, want=%q", result.Value, expected)
 	}
 
 	return nil
@@ -153,8 +172,7 @@ func testStringObject(expected string, actual object.Object) error {
 func testIntArray(expected []int, actual object.Object) error {
 	result, ok := actual.(*object.Array)
 	if !ok {
-		return fmt.Errorf("object is not Array. got=%T (%+v)",
-			actual, actual)
+		return fmt.Errorf("object is not Array. got=%T (%+v)", actual, actual)
 	}
 
 	if len(result.Elements) != len(expected) {
@@ -192,6 +210,20 @@ func testIntHash(expected map[object.HashKey]int64, actual object.Object) error 
 		if err != nil {
 			return fmt.Errorf("testIntegerObject failed: %s", err)
 		}
+	}
+
+	return nil
+}
+
+func testFloatObject(expected float64, actual object.Object) error {
+	result, ok := actual.(*object.Float)
+	if !ok {
+		return fmt.Errorf("object is not Float. got=%T (%+v)", actual, actual)
+	}
+
+	comparisonValue := math.Abs(expected-result.Value) <= float64EqualityThreshold
+	if !comparisonValue {
+		return fmt.Errorf("object has wrong value. got=%f, want=%f", result.Value, expected)
 	}
 
 	return nil
