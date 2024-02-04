@@ -5,14 +5,11 @@ import (
 	"boludolang/compiler"
 	"boludolang/object"
 	"fmt"
-	"math"
 )
 
 const StackSize = 2048
 const GlobalsSize = 65536
 const MaxFrames = 1024
-
-const float64EqualityThreshold = 1e-9
 
 var True = &object.Boolean{Value: true}
 var False = &object.Boolean{Value: false}
@@ -441,13 +438,11 @@ func (vm *VM) executeFloatComparison(op code.Opcode, left, right object.Object) 
 	leftVal := left.(*object.Float).Value
 	rightVal := right.(*object.Float).Value
 
-	comparisonValue := math.Abs(leftVal-rightVal) <= float64EqualityThreshold
-
 	switch op {
 	case code.OpEqual:
-		return vm.push(nativeBoolToBooleanObject(comparisonValue))
+		return vm.push(nativeBoolToBooleanObject(leftVal == rightVal))
 	case code.OpNotEqual:
-		return vm.push(nativeBoolToBooleanObject(!comparisonValue))
+		return vm.push(nativeBoolToBooleanObject(leftVal != rightVal))
 	case code.OpGreaterThan:
 		return vm.push(nativeBoolToBooleanObject(leftVal > rightVal))
 	default:

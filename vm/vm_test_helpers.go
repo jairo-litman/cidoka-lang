@@ -11,6 +11,8 @@ import (
 	"testing"
 )
 
+const float64EqualityThreshold = 1e-9
+
 type vmTestCase struct {
 	input    string
 	expected interface{}

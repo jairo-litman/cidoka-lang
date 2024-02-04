@@ -4,10 +4,7 @@ import (
 	"boludolang/ast"
 	"boludolang/object"
 	"fmt"
-	"math"
 )
-
-const float64EqualityThreshold = 1e-9
 
 var (
 	NULL  = &object.Null{}
@@ -261,8 +258,6 @@ func evalFloatInfixExpression(operator string, left, right object.Object) object
 	leftVal := left.(*object.Float).Value
 	rightVal := right.(*object.Float).Value
 
-	comparisonValue := math.Abs(leftVal-rightVal) <= float64EqualityThreshold
-
 	switch operator {
 	case "+":
 		return &object.Float{Value: leftVal + rightVal}
@@ -273,9 +268,9 @@ func evalFloatInfixExpression(operator string, left, right object.Object) object
 	case "/":
 		return &object.Float{Value: leftVal / rightVal}
 	case "==":
-		return nativeBoolToBooleanObject(comparisonValue)
+		return nativeBoolToBooleanObject(leftVal == rightVal)
 	case "!=":
-		return nativeBoolToBooleanObject(!comparisonValue)
+		return nativeBoolToBooleanObject(leftVal != rightVal)
 	case "<":
 		return nativeBoolToBooleanObject(leftVal < rightVal)
 	case ">":
