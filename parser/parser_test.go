@@ -948,3 +948,36 @@ func TestParsingFloatLiteralExpression(t *testing.T) {
 		t.Errorf("literal.TokenLiteral not %s. got=%s", "123.456", literal.TokenLiteral())
 	}
 }
+
+func TestAssignStatement(t *testing.T) {
+	input := `
+	let x = 5;
+	x = 10;
+	`
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(program.Statements) != 2 {
+		t.Fatalf("program has not enough statements. got=%d", len(program.Statements))
+	}
+
+	if !testLetStatement(t, program.Statements[0], "x") {
+		return
+	}
+
+	assignStmt, ok := program.Statements[1].(*ast.AssignStatement)
+	if !ok {
+		t.Fatalf("stmt not *ast.AssignStatement. got=%T", program.Statements[1])
+	}
+
+	if assignStmt.Name.Value != "x" {
+		t.Fatalf("assignStmt.Name.Value not %s. got=%s", "x", assignStmt.Name.Value)
+	}
+
+	if assignStmt.Value.String() != "10" {
+		t.Fatalf("assignStmt.Value not %s. got=%s", "10", assignStmt.Value.String())
+	}
+}

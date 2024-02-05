@@ -29,10 +29,16 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 	// Statements
 	case *ast.LetStatement:
+		_, ok := env.GetCurrentEnv(node.Name.Value)
+		if ok {
+			return newError("identifier already declared: " + node.Name.Value)
+		}
+
 		val := Eval(node.Value, env)
 		if isError(val) {
 			return val
 		}
+
 		env.Set(node.Name.Value, val)
 
 	case *ast.ReturnStatement:
@@ -40,7 +46,21 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		if isError(val) {
 			return val
 		}
+
 		return &object.ReturnValue{Value: val}
+
+	case *ast.AssignStatement:
+		_, ok := env.GetCurrentEnv(node.Name.Value)
+		if !ok {
+			return newError("identifier not declared: " + node.Name.Value)
+		}
+
+		val := Eval(node.Value, env)
+		if isError(val) {
+			return val
+		}
+
+		env.Set(node.Name.Value, val)
 
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression, env)
@@ -69,6 +89,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		if isError(right) {
 			return right
 		}
+
 		return evalPrefixExpression(node.Operator, right)
 
 	case *ast.InfixExpression:
@@ -81,6 +102,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		if isError(right) {
 			return right
 		}
+
 		return evalInfixExpression(node.Operator, left, right)
 
 	case *ast.IfExpression:
@@ -109,6 +131,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		if len(elements) == 1 && isError(elements[0]) {
 			return elements[0]
 		}
+
 		return &object.Array{Elements: elements}
 
 	case *ast.HashLiteral:
@@ -119,10 +142,12 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		if isError(left) {
 			return left
 		}
+
 		index := Eval(node.Index, env)
 		if isError(index) {
 			return index
 		}
+
 		return evalIndexExpression(left, index)
 	}
 

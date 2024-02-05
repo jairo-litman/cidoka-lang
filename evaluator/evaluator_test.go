@@ -578,3 +578,51 @@ func TestHashIndexExpressions(t *testing.T) {
 		}
 	}
 }
+
+func TestFunctionCallAlreadyDeclaredArg(t *testing.T) {
+	input := []struct {
+		input    string
+		expected int64
+	}{
+		{
+			`let x = 30;
+			let add = fn(x, y) { x + y; };
+			add(5, 5);`,
+			10,
+		},
+		{
+			`let x = 30;
+			let func = fn(x) { x; };
+			func(5);`,
+			5,
+		},
+		{
+			`let x = 30;
+			let func = fn(x) { x = 20; };
+			func(5);
+			x;`,
+			30,
+		},
+		{
+			`let x = 30;
+			let func = fn() { let x = 20; x };
+			func();`,
+			20,
+		},
+		{
+			`let x = 30;
+			let func = fn() { let x = 20; x };
+			x;`,
+			30,
+		},
+		{
+			`let x = fn() { let x = 20; x };
+			x();`,
+			20,
+		},
+	}
+
+	for _, tt := range input {
+		testIntegerObject(t, testEval(tt.input), tt.expected)
+	}
+}

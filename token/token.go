@@ -14,10 +14,10 @@ const (
 
 	// Assignment operators
 	ASSIGN      TokenType = "="
-	PLUS_EQ     TokenType = "+="
-	MINUS_EQ    TokenType = "-="
-	ASTERISK_EQ TokenType = "*="
-	SLASH_EQ    TokenType = "/="
+	PLUS_EQ     TokenType = "+=" // todo
+	MINUS_EQ    TokenType = "-=" // todo
+	ASTERISK_EQ TokenType = "*=" // todo
+	SLASH_EQ    TokenType = "/=" // todo
 	MODULO_EQ   TokenType = "%=" // todo
 
 	// Arithmetic operators

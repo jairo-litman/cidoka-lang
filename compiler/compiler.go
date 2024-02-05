@@ -73,6 +73,10 @@ func (c *Compiler) Compile(node ast.Node) error {
 
 	// Statements
 	case *ast.LetStatement:
+		if s, ok := c.symbolTable.ResolveCurrent(node.Name.Value); ok && s.Scope != FunctionScope {
+			return fmt.Errorf("variable %s already declared", node.Name.Value)
+		}
+
 		symbol := c.symbolTable.Define(node.Name.Value)
 		err := c.Compile(node.Value)
 		if err != nil {
@@ -92,6 +96,23 @@ func (c *Compiler) Compile(node ast.Node) error {
 		}
 
 		c.emit(code.OpReturnValue)
+
+	case *ast.AssignStatement:
+		symbol, ok := c.symbolTable.ResolveCurrent(node.Name.Value)
+		if !ok {
+			return fmt.Errorf("undeclared variable %s", node.Name.Value)
+		}
+
+		err := c.Compile(node.Value)
+		if err != nil {
+			return err
+		}
+
+		if symbol.Scope == GlobalScope {
+			c.emit(code.OpSetGlobal, symbol.Index)
+		} else {
+			c.emit(code.OpSetLocal, symbol.Index)
+		}
 
 	case *ast.ExpressionStatement:
 		err := c.Compile(node.Expression)

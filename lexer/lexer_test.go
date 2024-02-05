@@ -32,6 +32,9 @@ func TestNextToken(t *testing.T) {
 	123.456
 	.123
 	0.456
+
+	let x = 5;
+	x = 10;
 	`
 
 	tests := []struct {
@@ -127,6 +130,15 @@ func TestNextToken(t *testing.T) {
 		{token.FLOAT, "123.456"},
 		{token.FLOAT, ".123"},
 		{token.FLOAT, "0.456"},
+		{token.LET, "let"},
+		{token.IDENT, "x"},
+		{token.ASSIGN, "="},
+		{token.INT, "5"},
+		{token.SEMICOLON, ";"},
+		{token.IDENT, "x"},
+		{token.ASSIGN, "="},
+		{token.INT, "10"},
+		{token.SEMICOLON, ";"},
 		{token.EOF, ""},
 	}
 

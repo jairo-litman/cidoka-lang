@@ -161,6 +161,11 @@ func (parser *Parser) parseStatement() ast.Statement {
 		return parser.parseLetStatement()
 	case token.RETURN:
 		return parser.parseReturnStatement()
+	case token.IDENT:
+		if parser.peekTokenIs(token.ASSIGN) {
+			return parser.parseAssignStatement()
+		}
+		fallthrough
 	default:
 		expr := parser.parseExpressionStatement()
 		if expr != nil && expr.Expression != nil {
@@ -204,6 +209,24 @@ func (parser *Parser) parseReturnStatement() *ast.ReturnStatement {
 	parser.nextToken()
 
 	stmt.ReturnValue = parser.parseExpression(LOWEST)
+
+	if parser.peekTokenIs(token.SEMICOLON) {
+		parser.nextToken()
+	}
+
+	return stmt
+}
+
+func (parser *Parser) parseAssignStatement() *ast.AssignStatement {
+	stmt := &ast.AssignStatement{}
+	stmt.Name = &ast.Identifier{Token: parser.curToken, Value: parser.curToken.Literal}
+
+	parser.nextToken()
+
+	stmt.Token = parser.curToken
+	parser.nextToken()
+
+	stmt.Value = parser.parseExpression(LOWEST)
 
 	if parser.peekTokenIs(token.SEMICOLON) {
 		parser.nextToken()

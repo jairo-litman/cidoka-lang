@@ -1037,3 +1037,123 @@ func TestFloatingPointArithmetic(t *testing.T) {
 
 	runCompilerTests(t, tests)
 }
+
+func TestAssignment(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input: `
+			let a = 1;
+			a = 2;
+			`,
+			expectedConstants: []interface{}{1, 2},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpSetGlobal, 0),
+			},
+		},
+		{
+			input: `
+			let a = 1;
+			let b = a;
+			`,
+			expectedConstants: []interface{}{1},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpSetGlobal, 1),
+			},
+		},
+		{
+			input: `
+			let a = 1;
+			let b = a;
+			a = 2;
+			`,
+			expectedConstants: []interface{}{1, 2},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpSetGlobal, 1),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpSetGlobal, 0),
+			},
+		},
+	}
+
+	runCompilerTests(t, tests)
+}
+
+func TestFunctionsAlreadyDeclaredArg(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input: `
+			let a = 1;
+			fn() { let a = 2; };
+			`,
+			expectedConstants: []interface{}{
+				1,
+				2,
+				[]code.Instructions{
+					code.Make(code.OpConstant, 1),
+					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpReturn),
+				},
+			},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpClosure, 2, 0),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `
+			let a = fn() { let a = 2; a; };
+			a();
+			`,
+			expectedConstants: []interface{}{
+				2,
+				[]code.Instructions{
+					code.Make(code.OpConstant, 0),
+					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpGetLocal, 0),
+					code.Make(code.OpReturnValue),
+				},
+			},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpClosure, 1, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpCall, 0),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `
+			let a = fn(a) { a; };
+			a(1);
+			`,
+			expectedConstants: []interface{}{
+				[]code.Instructions{
+					code.Make(code.OpGetLocal, 0),
+					code.Make(code.OpReturnValue),
+				},
+				1,
+			},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpClosure, 0, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpCall, 1),
+				code.Make(code.OpPop),
+			},
+		},
+	}
+
+	runCompilerTests(t, tests)
+}

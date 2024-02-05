@@ -73,6 +73,29 @@ func (letStmt *LetStatement) String() string {
 	return out.String()
 }
 
+type AssignStatement struct {
+	Token token.Token // the token.ASSIGN token
+	Name  *Identifier
+	Value Expression
+}
+
+func (assignStmt *AssignStatement) statementNode()       {}
+func (assignStmt *AssignStatement) TokenLiteral() string { return assignStmt.Token.Literal }
+func (assignStmt *AssignStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(assignStmt.Name.String())
+	out.WriteString(" = ")
+
+	if assignStmt.Value != nil {
+		out.WriteString(assignStmt.Value.String())
+	}
+
+	out.WriteString(";")
+
+	return out.String()
+}
+
 type ReturnStatement struct {
 	Token       token.Token // the token.RETURN token
 	ReturnValue Expression
