@@ -173,20 +173,20 @@ func (c *Compiler) Compile(node ast.Node) error {
 		}
 
 	case *ast.InfixExpression:
-		// since there is no "OpLessThan" instruction, we use "OpGreaterThan" and reverse the operands
-		// 1 < 2 => 2 > 1
-		if node.Operator == "<" {
-			err := c.Compile(node.Right)
-			if err != nil {
-				return err
-			}
-			err = c.Compile(node.Left)
-			if err != nil {
-				return err
-			}
-			c.emit(code.OpGreaterThan)
-			return nil
-		}
+		// // since there is no "OpLessThan" instruction, we use "OpGreaterThan" and reverse the operands
+		// // 1 < 2 => 2 > 1
+		// if node.Operator == "<" {
+		// 	err := c.Compile(node.Right)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// 	err = c.Compile(node.Left)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// 	c.emit(code.OpGreaterThan)
+		// 	return nil
+		// }
 
 		err := c.Compile(node.Left)
 		if err != nil {
@@ -213,6 +213,12 @@ func (c *Compiler) Compile(node ast.Node) error {
 			c.emit(code.OpNotEqual)
 		case ">":
 			c.emit(code.OpGreaterThan)
+		case ">=":
+			c.emit(code.OpGreaterOrEqual)
+		case "<":
+			c.emit(code.OpLessThan)
+		case "<=":
+			c.emit(code.OpLessOrEqual)
 		default:
 			return fmt.Errorf("unknown operator %s", node.Operator)
 		}

@@ -31,9 +31,9 @@ const (
 	EQ     TokenType = "=="
 	NOT_EQ TokenType = "!="
 	LT     TokenType = "<"
-	LT_EQ  TokenType = "<=" // todo
+	LT_EQ  TokenType = "<="
 	GT     TokenType = ">"
-	GT_EQ  TokenType = ">=" // todo
+	GT_EQ  TokenType = ">="
 
 	// Logical operators
 	AND  TokenType = "&&" // todo

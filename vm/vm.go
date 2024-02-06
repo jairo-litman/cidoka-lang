@@ -107,7 +107,7 @@ func (vm *VM) Run() error {
 				return err
 			}
 
-		case code.OpEqual, code.OpNotEqual, code.OpGreaterThan:
+		case code.OpEqual, code.OpNotEqual, code.OpGreaterThan, code.OpGreaterOrEqual, code.OpLessThan, code.OpLessOrEqual:
 			err := vm.executeComparison(op)
 			if err != nil {
 				return err
@@ -429,6 +429,12 @@ func (vm *VM) executeIntegerComparison(op code.Opcode, left, right object.Object
 		return vm.push(nativeBoolToBooleanObject(leftVal != rightVal))
 	case code.OpGreaterThan:
 		return vm.push(nativeBoolToBooleanObject(leftVal > rightVal))
+	case code.OpGreaterOrEqual:
+		return vm.push(nativeBoolToBooleanObject(leftVal >= rightVal))
+	case code.OpLessThan:
+		return vm.push(nativeBoolToBooleanObject(leftVal < rightVal))
+	case code.OpLessOrEqual:
+		return vm.push(nativeBoolToBooleanObject(leftVal <= rightVal))
 	default:
 		return fmt.Errorf("unknown integer operator: %d", op)
 	}
@@ -445,6 +451,12 @@ func (vm *VM) executeFloatComparison(op code.Opcode, left, right object.Object) 
 		return vm.push(nativeBoolToBooleanObject(leftVal != rightVal))
 	case code.OpGreaterThan:
 		return vm.push(nativeBoolToBooleanObject(leftVal > rightVal))
+	case code.OpGreaterOrEqual:
+		return vm.push(nativeBoolToBooleanObject(leftVal >= rightVal))
+	case code.OpLessThan:
+		return vm.push(nativeBoolToBooleanObject(leftVal < rightVal))
+	case code.OpLessOrEqual:
+		return vm.push(nativeBoolToBooleanObject(leftVal <= rightVal))
 	default:
 		return fmt.Errorf("unknown float operator: %d", op)
 	}
