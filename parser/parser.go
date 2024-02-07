@@ -1,9 +1,9 @@
 package parser
 
 import (
-	"boludolang/ast"
-	"boludolang/lexer"
-	"boludolang/token"
+	"cidoka/ast"
+	"cidoka/lexer"
+	"cidoka/token"
 	"fmt"
 	"strconv"
 )

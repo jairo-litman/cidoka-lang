@@ -1,8 +1,8 @@
 package evaluator
 
 import (
-	"boludolang/ast"
-	"boludolang/object"
+	"cidoka/ast"
+	"cidoka/object"
 	"fmt"
 )
 

@@ -1,9 +1,9 @@
 package evaluator
 
 import (
-	"boludolang/lexer"
-	"boludolang/object"
-	"boludolang/parser"
+	"cidoka/lexer"
+	"cidoka/object"
+	"cidoka/parser"
 	"testing"
 )
 

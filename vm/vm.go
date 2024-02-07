@@ -1,9 +1,9 @@
 package vm
 
 import (
-	"boludolang/code"
-	"boludolang/compiler"
-	"boludolang/object"
+	"cidoka/code"
+	"cidoka/compiler"
+	"cidoka/object"
 	"fmt"
 )
 

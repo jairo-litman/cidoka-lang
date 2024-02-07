@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"boludolang/token"
+	"cidoka/token"
 	"testing"
 )
 

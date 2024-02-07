@@ -1,9 +1,9 @@
 package object
 
 import (
-	"boludolang/ast"
-	"boludolang/code"
 	"bytes"
+	"cidoka/ast"
+	"cidoka/code"
 	"fmt"
 	"hash/fnv"
 	"strings"

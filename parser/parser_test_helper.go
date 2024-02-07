@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"boludolang/ast"
+	"cidoka/ast"
 	"fmt"
 	"testing"
 )

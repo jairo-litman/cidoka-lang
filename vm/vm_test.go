@@ -1,8 +1,8 @@
 package vm
 
 import (
-	"boludolang/compiler"
-	"boludolang/object"
+	"cidoka/compiler"
+	"cidoka/object"
 	"testing"
 )
 

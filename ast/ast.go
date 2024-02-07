@@ -1,8 +1,8 @@
 package ast
 
 import (
-	"boludolang/token"
 	"bytes"
+	"cidoka/token"
 	"fmt"
 	"strings"
 )
