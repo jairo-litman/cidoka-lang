@@ -132,28 +132,43 @@ func (c *Compiler) Compile(node ast.Node) error {
 	case *ast.ForLoopStatement:
 		c.enterScope()
 
-		err := c.Compile(node.Initializer)
-		if err != nil {
-			return err
+		if node.Initializer != nil {
+			err := c.Compile(node.Initializer)
+			if err != nil {
+				return err
+			}
+		} else {
+			c.emit(code.OpNull)
+			c.emit(code.OpPop)
 		}
 
 		conditionPos := len(c.currentInstructions())
-		err = c.Compile(node.Condition)
-		if err != nil {
-			return err
+
+		if node.Condition == nil {
+			c.emit(code.OpTrue)
+		} else {
+			err := c.Compile(node.Condition)
+			if err != nil {
+				return err
+			}
 		}
 
 		// Emit an `OpJumpNotTruthy` with a bogus value
 		jumptNotTruthyPos := c.emit(code.OpJumpNotTruthy, 9999)
 
-		err = c.Compile(node.Body)
+		err := c.Compile(node.Body)
 		if err != nil {
 			return err
 		}
 
-		err = c.Compile(node.Update)
-		if err != nil {
-			return err
+		if node.Update != nil {
+			err = c.Compile(node.Update)
+			if err != nil {
+				return err
+			}
+		} else {
+			c.emit(code.OpNull)
+			c.emit(code.OpPop)
 		}
 
 		// Emit an `OpJump` with a bogus value

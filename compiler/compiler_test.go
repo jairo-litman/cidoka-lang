@@ -1360,6 +1360,77 @@ func TestForLoops(t *testing.T) {
 				code.Make(code.OpPop),
 			},
 		},
+		{
+			input: `
+			let i = 0;
+			for (;;) {
+				if (i == 5) {
+					break;
+				}
+				i = i + 1;
+			}
+			i;
+			`,
+			expectedConstants: []interface{}{
+				0,
+				5,
+				1,
+				[]code.Instructions{
+					// 0000 - init
+					code.Make(code.OpNull),
+					// 0001
+					code.Make(code.OpPop),
+					// 0002 - condition
+					code.Make(code.OpTrue),
+					// 0003
+					code.Make(code.OpJumpNotTruthy, 37),
+					// 0006 - loop body
+					code.Make(code.OpGetGlobal, 0),
+					// 0009
+					code.Make(code.OpConstant, 1),
+					// 0012
+					code.Make(code.OpEqual),
+					// 0013
+					code.Make(code.OpJumpNotTruthy, 20),
+					// 0016
+					code.Make(code.OpBreak),
+					// 0017
+					code.Make(code.OpJump, 21),
+					// 0020
+					code.Make(code.OpNull),
+					// 0021
+					code.Make(code.OpPop),
+					// 0022
+					code.Make(code.OpGetGlobal, 0),
+					// 0025
+					code.Make(code.OpConstant, 2),
+					// 0028
+					code.Make(code.OpAdd),
+					// 0029
+					code.Make(code.OpSetGlobal, 0),
+					// 0032 - increment
+					code.Make(code.OpNull),
+					// 0033
+					code.Make(code.OpPop),
+					// 0034 - jump back to condition
+					code.Make(code.OpJump, 2),
+					// 0037 - exit loop
+					code.Make(code.OpBreak),
+				},
+			},
+			expectedInstructions: []code.Instructions{
+				// 0000
+				code.Make(code.OpConstant, 0),
+				// 0003
+				code.Make(code.OpSetGlobal, 0),
+				// 0006
+				code.Make(code.OpForLoop, 3),
+				// 0009
+				code.Make(code.OpGetGlobal, 0),
+				// 0012
+				code.Make(code.OpPop),
+			},
+		},
 	}
 
 	runCompilerTests(t, tests)

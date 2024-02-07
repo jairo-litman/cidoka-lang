@@ -662,6 +662,19 @@ func TestForLoop(t *testing.T) {
 			`,
 			expected: 10,
 		},
+		{
+			input: `
+			let i = 0;
+			for (;;) {
+				if (i == 5) {
+					break;
+				}
+				i = i + 1;
+			}
+			i;
+			`,
+			expected: 5,
+		},
 	}
 
 	runVmTests(t, tests)

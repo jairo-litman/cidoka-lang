@@ -641,13 +641,15 @@ func TestEvalForLoop(t *testing.T) {
 
 func TestEvalEmptyForLoop(t *testing.T) {
 	input := `
-	let sum = 0;
+	let i = 0;
 	for (;;) {
-		break;
-		sum = sum + 1;
+		if (i == 5) {
+			break;
+		}
+		i = i + 1;
 	}
-	sum;
+	i;
 	`
 
-	testIntegerObject(t, testEval(input), 0)
+	testIntegerObject(t, testEval(input), 5)
 }
