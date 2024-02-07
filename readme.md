@@ -1,4 +1,4 @@
-# The Cidoka Programming Language - test
+# The Cidoka Programming Language
 
 This repo is an implementation of the Monkey Programming Language. Built by following Thorsten Ball's two books on the topics of [interpreters](https://interpreterbook.com/) and [compilers](https://compilerbook.com/).
 
