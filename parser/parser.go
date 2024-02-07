@@ -73,6 +73,7 @@ func New(lex *lexer.Lexer) *Parser {
 
 	parser.registerPrefix(token.IF, parser.parseIfExpression)
 	parser.registerPrefix(token.FUNCTION, parser.parseFunctionLiteral)
+
 	parser.registerPrefix(token.LPAREN, parser.parseGroupedExpression)
 	parser.registerPrefix(token.LBRACKET, parser.parseArrayLiteral)
 	parser.registerPrefix(token.LBRACE, parser.parseHashLiteral)
@@ -165,6 +166,10 @@ func (parser *Parser) parseStatement() ast.Statement {
 		return parser.parseLetStatement()
 	case token.RETURN:
 		return parser.parseReturnStatement()
+	case token.FOR:
+		return parser.parseForLoopStatement()
+	case token.BREAK:
+		return parser.parseBreakStatement()
 	case token.IDENT:
 		if parser.peekTokenIs(token.ASSIGN) {
 			return parser.parseAssignStatement()
@@ -243,6 +248,69 @@ func (parser *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	stmt := &ast.ExpressionStatement{Token: parser.curToken}
 
 	stmt.Expression = parser.parseExpression(LOWEST)
+
+	if parser.peekTokenIs(token.SEMICOLON) {
+		parser.nextToken()
+	}
+
+	return stmt
+}
+
+func (parser *Parser) parseForLoopStatement() ast.Statement {
+	stmt := &ast.ForLoopStatement{Token: parser.curToken}
+
+	if !parser.expectPeek(token.LPAREN) {
+		return nil
+	}
+
+	parser.nextToken()
+
+	switch parser.curToken.Type {
+	case token.LET:
+		stmt.Initializer = parser.parseLetStatement()
+	case token.IDENT:
+		stmt.Initializer = parser.parseAssignStatement()
+	case token.SEMICOLON:
+		stmt.Initializer = nil
+	default:
+		return nil
+	}
+
+	parser.nextToken()
+	switch parser.curToken.Type {
+	case token.SEMICOLON:
+		stmt.Condition = nil
+	default:
+		stmt.Condition = parser.parseExpression(LOWEST)
+
+		if !parser.expectPeek(token.SEMICOLON) {
+			return nil
+		}
+	}
+
+	parser.nextToken()
+	switch parser.curToken.Type {
+	case token.RPAREN:
+		stmt.Update = nil
+	default:
+		stmt.Update = parser.parseAssignStatement()
+
+		if !parser.expectPeek(token.RPAREN) {
+			return nil
+		}
+	}
+
+	if !parser.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	stmt.Body = parser.parseBlockStatement()
+
+	return stmt
+}
+
+func (parser *Parser) parseBreakStatement() *ast.BreakStatement {
+	stmt := &ast.BreakStatement{Token: parser.curToken}
 
 	if parser.peekTokenIs(token.SEMICOLON) {
 		parser.nextToken()

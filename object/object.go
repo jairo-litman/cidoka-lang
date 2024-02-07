@@ -31,6 +31,10 @@ const (
 
 	COMPILED_FUNCTION_OBJ = "COMPILED_FUNCTION"
 	CLOSURE_OBJ           = "CLOSURE"
+
+	BREAK_OBJ = "BREAK"
+
+	COMPILED_FOR_OBJ = "COMPILED_FOR"
 )
 
 type HashKey struct {
@@ -211,4 +215,18 @@ type Closure struct {
 func (c *Closure) Type() ObjectType { return CLOSURE_OBJ }
 func (c *Closure) Inspect() string {
 	return fmt.Sprintf("Closure[%p]", c)
+}
+
+type Break struct{}
+
+func (b *Break) Type() ObjectType { return BREAK_OBJ }
+func (b *Break) Inspect() string  { return "break" }
+
+type CompiledFor struct {
+	Instructions code.Instructions
+}
+
+func (cf *CompiledFor) Type() ObjectType { return COMPILED_FOR_OBJ }
+func (cf *CompiledFor) Inspect() string {
+	return fmt.Sprintf("CompiledFor[%p]", cf)
 }

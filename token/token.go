@@ -61,6 +61,8 @@ const (
 	IF       TokenType = "IF"
 	ELSE     TokenType = "ELSE"
 	RETURN   TokenType = "RETURN"
+	FOR      TokenType = "FOR"
+	BREAK    TokenType = "BREAK"
 )
 
 type Token struct {
@@ -76,6 +78,8 @@ var keywords = map[string]TokenType{
 	"if":     IF,
 	"else":   ELSE,
 	"return": RETURN,
+	"for":    FOR,
+	"break":  BREAK,
 }
 
 /*

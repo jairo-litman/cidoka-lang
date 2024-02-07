@@ -71,7 +71,7 @@ func (s *SymbolTable) Resolve(name string) (Symbol, bool) {
 	return obj, ok
 }
 
-func (s *SymbolTable) ResolveCurrent(name string) (Symbol, bool) {
+func (s *SymbolTable) ResolveNoRecursion(name string) (Symbol, bool) {
 	obj, ok := s.store[name]
 	return obj, ok
 }

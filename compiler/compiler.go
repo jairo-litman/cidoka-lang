@@ -73,7 +73,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 
 	// Statements
 	case *ast.LetStatement:
-		if s, ok := c.symbolTable.ResolveCurrent(node.Name.Value); ok && s.Scope != FunctionScope {
+		if s, ok := c.symbolTable.ResolveNoRecursion(node.Name.Value); ok && s.Scope != FunctionScope {
 			return fmt.Errorf("variable %s already declared", node.Name.Value)
 		}
 
@@ -98,7 +98,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 		c.emit(code.OpReturnValue)
 
 	case *ast.AssignStatement:
-		symbol, ok := c.symbolTable.ResolveCurrent(node.Name.Value)
+		symbol, ok := c.symbolTable.Resolve(node.Name.Value)
 		if !ok {
 			return fmt.Errorf("undeclared variable %s", node.Name.Value)
 		}
@@ -128,6 +128,58 @@ func (c *Compiler) Compile(node ast.Node) error {
 				return err
 			}
 		}
+
+	case *ast.ForLoopStatement:
+		c.enterScope()
+
+		err := c.Compile(node.Initializer)
+		if err != nil {
+			return err
+		}
+
+		conditionPos := len(c.currentInstructions())
+		err = c.Compile(node.Condition)
+		if err != nil {
+			return err
+		}
+
+		// Emit an `OpJumpNotTruthy` with a bogus value
+		jumptNotTruthyPos := c.emit(code.OpJumpNotTruthy, 9999)
+
+		err = c.Compile(node.Body)
+		if err != nil {
+			return err
+		}
+
+		err = c.Compile(node.Update)
+		if err != nil {
+			return err
+		}
+
+		// Emit an `OpJump` with a bogus value
+		jumpPos := c.emit(code.OpJump, 9999)
+
+		// Update the `OpJumpNotTruthy` with the correct value
+		afterBodyPos := len(c.currentInstructions())
+		c.changeOperand(jumptNotTruthyPos, afterBodyPos)
+
+		// Update the `OpJump` with the correct value
+		c.changeOperand(jumpPos, conditionPos)
+
+		c.emit(code.OpBreak)
+
+		ins := c.leaveScope()
+
+		compiled := &object.CompiledFor{
+			Instructions: ins,
+		}
+
+		idx := c.addConstant(compiled)
+
+		c.emit(code.OpForLoop, idx)
+
+	case *ast.BreakStatement:
+		c.emit(code.OpBreak)
 
 	// Expressions
 	case *ast.Identifier:
@@ -173,21 +225,6 @@ func (c *Compiler) Compile(node ast.Node) error {
 		}
 
 	case *ast.InfixExpression:
-		// // since there is no "OpLessThan" instruction, we use "OpGreaterThan" and reverse the operands
-		// // 1 < 2 => 2 > 1
-		// if node.Operator == "<" {
-		// 	err := c.Compile(node.Right)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// 	err = c.Compile(node.Left)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// 	c.emit(code.OpGreaterThan)
-		// 	return nil
-		// }
-
 		err := c.Compile(node.Left)
 		if err != nil {
 			return err

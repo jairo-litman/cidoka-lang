@@ -148,6 +148,54 @@ func (blockStmt *BlockStatement) String() string {
 	return out.String()
 }
 
+type ForLoopStatement struct {
+	Token       token.Token // the token.FOR token
+	Initializer Statement
+	Condition   Expression
+	Update      Statement
+	Body        *BlockStatement
+}
+
+func (forLoop *ForLoopStatement) statementNode()       {}
+func (forLoop *ForLoopStatement) TokenLiteral() string { return forLoop.Token.Literal }
+func (forLoop *ForLoopStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("for")
+	out.WriteString(" (")
+
+	if forLoop.Initializer != nil {
+		out.WriteString(forLoop.Initializer.String())
+		out.WriteString(" ")
+	} else {
+		out.WriteString("; ")
+	}
+
+	if forLoop.Condition != nil {
+		out.WriteString(forLoop.Condition.String())
+	}
+	out.WriteString("; ")
+
+	if forLoop.Update != nil {
+		out.WriteString(forLoop.Update.String())
+	}
+	out.WriteString(") ")
+
+	out.WriteString("{ ")
+	out.WriteString(forLoop.Body.String())
+	out.WriteString(" }")
+
+	return out.String()
+}
+
+type BreakStatement struct {
+	Token token.Token // the token.BREAK token
+}
+
+func (breakStmt *BreakStatement) statementNode()       {}
+func (breakStmt *BreakStatement) TokenLiteral() string { return breakStmt.Token.Literal }
+func (breakStmt *BreakStatement) String() string       { return breakStmt.TokenLiteral() }
+
 // Expressions
 
 type Identifier struct {

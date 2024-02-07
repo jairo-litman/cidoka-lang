@@ -6,19 +6,26 @@ import (
 )
 
 type Frame struct {
-	cl          *object.Closure
+	obj         object.Object
 	ip          int
 	basePointer int
 }
 
-func NewFrame(cl *object.Closure, basePointer int) *Frame {
+func NewFrame(obj object.Object, basePointer int) *Frame {
 	return &Frame{
-		cl:          cl,
+		obj:         obj,
 		ip:          -1,
 		basePointer: basePointer,
 	}
 }
 
 func (f *Frame) Instructions() code.Instructions {
-	return f.cl.Fn.Instructions
+	switch obj := f.obj.(type) {
+	case *object.Closure:
+		return obj.Fn.Instructions
+	case *object.CompiledFor:
+		return obj.Instructions
+	default:
+		return nil
+	}
 }

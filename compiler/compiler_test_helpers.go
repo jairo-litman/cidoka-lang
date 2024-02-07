@@ -90,14 +90,32 @@ func testConstants(t *testing.T, expected []interface{}, actual []object.Object)
 				return fmt.Errorf("constant %d - testStringObject failed: %s", i, err)
 			}
 		case []code.Instructions:
-			fn, ok := actual[i].(*object.CompiledFunction)
-			if !ok {
-				return fmt.Errorf("constant %d - not a function: %T", i, actual[i])
+			var compiledInstructions code.Instructions
+			switch actual[i].(type) {
+			case *object.CompiledFunction:
+				fn, ok := actual[i].(*object.CompiledFunction)
+				if !ok {
+					return fmt.Errorf("constant %d - not a function: %T", i, actual[i])
+				}
+				compiledInstructions = fn.Instructions
+			case *object.CompiledFor:
+				fl, ok := actual[i].(*object.CompiledFor)
+				if !ok {
+					return fmt.Errorf("constant %d - not a for loop: %T", i, actual[i])
+				}
+				compiledInstructions = fl.Instructions
+			default:
+				return fmt.Errorf("constant %d - not a function or loop: %T", i, actual[i])
 			}
 
-			err := testInstructions(constant, fn.Instructions)
+			err := testInstructions(constant, compiledInstructions)
 			if err != nil {
 				return fmt.Errorf("constant %d - testInstructions failed: %s", i, err)
+			}
+		case float64:
+			err := testFloatObject(constant, actual[i])
+			if err != nil {
+				return fmt.Errorf("constant %d - testFloatObject failed: %s", i, err)
 			}
 		}
 	}
@@ -126,6 +144,19 @@ func testStringObject(expected string, actual object.Object) error {
 
 	if result.Value != expected {
 		return fmt.Errorf("object has wrong value. got=%q, want=%q", result.Value, expected)
+	}
+
+	return nil
+}
+
+func testFloatObject(expected float64, actual object.Object) error {
+	result, ok := actual.(*object.Float)
+	if !ok {
+		return fmt.Errorf("object is not Float. got=%T (%+v)", actual, actual)
+	}
+
+	if result.Value != expected {
+		return fmt.Errorf("object has wrong value. got=%f, want=%f", result.Value, expected)
 	}
 
 	return nil

@@ -626,3 +626,28 @@ func TestFunctionCallAlreadyDeclaredArg(t *testing.T) {
 		testIntegerObject(t, testEval(tt.input), tt.expected)
 	}
 }
+
+func TestEvalForLoop(t *testing.T) {
+	input := `
+	let sum = 0;
+	for (let i = 0; i < 10; i = i + 1) {
+		sum = sum + i;
+	}
+	sum;
+	`
+
+	testIntegerObject(t, testEval(input), 45)
+}
+
+func TestEvalEmptyForLoop(t *testing.T) {
+	input := `
+	let sum = 0;
+	for (;;) {
+		break;
+		sum = sum + 1;
+	}
+	sum;
+	`
+
+	testIntegerObject(t, testEval(input), 0)
+}

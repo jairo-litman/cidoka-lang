@@ -636,3 +636,33 @@ func TestFloatingPointNumbers(t *testing.T) {
 
 	runVmTests(t, tests)
 }
+
+func TestForLoop(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input: `
+			let sum = 0;
+			for (let i = 0; i < 10; i = i + 1) {
+				sum = sum + i;
+			}
+			sum;
+			`,
+			expected: 45,
+		},
+		{
+			input: `
+			let sum = 0;
+			for (let i = 0; i < 10; i = i + 1) {
+				if (i == 5) {
+					break;
+				}
+				sum = sum + i;
+			}
+			sum;
+			`,
+			expected: 10,
+		},
+	}
+
+	runVmTests(t, tests)
+}

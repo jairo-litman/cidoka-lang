@@ -10,6 +10,7 @@ var (
 	NULL  = &object.Null{}
 	TRUE  = &object.Boolean{Value: true}
 	FALSE = &object.Boolean{Value: false}
+	BREAK = &object.Break{}
 )
 
 var builtins = map[string]*object.Builtin{
@@ -29,7 +30,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 	// Statements
 	case *ast.LetStatement:
-		_, ok := env.GetCurrentEnv(node.Name.Value)
+		_, ok := env.GetNoRecursion(node.Name.Value)
 		if ok {
 			return newError("identifier already declared: " + node.Name.Value)
 		}
@@ -50,7 +51,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return &object.ReturnValue{Value: val}
 
 	case *ast.AssignStatement:
-		_, ok := env.GetCurrentEnv(node.Name.Value)
+		_, identEnv, ok := env.Get(node.Name.Value)
 		if !ok {
 			return newError("identifier not declared: " + node.Name.Value)
 		}
@@ -60,13 +61,59 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return val
 		}
 
-		env.Set(node.Name.Value, val)
+		identEnv.Set(node.Name.Value, val)
 
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression, env)
 
 	case *ast.BlockStatement:
 		return evalBlockStatement(node, env)
+
+	case *ast.ForLoopStatement:
+		// Create a new environment for the for loop
+		forEnv := object.NewEnclosedEnvironment(env)
+
+		// Evaluate the init expression
+		if node.Initializer != nil {
+			init := Eval(node.Initializer, forEnv)
+			if isError(init) {
+				return init
+			}
+		}
+
+		// Evaluate the condition expression
+		condition := Eval(node.Condition, forEnv)
+		if isError(condition) {
+			return condition
+		}
+
+		// Loop until the condition is false
+		for isTruthy(condition) {
+			// Evaluate the body
+			body := Eval(node.Body, forEnv)
+			if isError(body) {
+				return body
+			}
+
+			if body == BREAK {
+				break
+			}
+
+			// Evaluate the update expression
+			update := Eval(node.Update, forEnv)
+			if isError(update) {
+				return update
+			}
+
+			// Re-evaluate the condition
+			condition = Eval(node.Condition, forEnv)
+			if isError(condition) {
+				return condition
+			}
+		}
+
+	case *ast.BreakStatement:
+		return BREAK
 
 	// Expressions
 	case *ast.Identifier:
@@ -182,6 +229,10 @@ func evalBlockStatement(block *ast.BlockStatement, env *object.Environment) obje
 
 			if rt == object.RETURN_VALUE_OBJ || rt == object.ERROR_OBJ {
 				return result
+			}
+
+			if rt == object.BREAK_OBJ {
+				break
 			}
 		}
 	}
@@ -339,7 +390,7 @@ func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Obje
 }
 
 func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object {
-	if val, ok := env.Get(node.Value); ok {
+	if val, _, ok := env.Get(node.Value); ok {
 		return val
 	}
 

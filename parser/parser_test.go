@@ -989,3 +989,97 @@ func TestAssignStatement(t *testing.T) {
 		t.Fatalf("assignStmt.Value not %s. got=%s", "10", assignStmt.Value.String())
 	}
 }
+
+func TestForLoop(t *testing.T) {
+	input := `
+	for (let i = 0; i < 10; i = i + 1) {
+		let x = 5;
+	}
+	`
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("program has not enough statements. got=%d", len(program.Statements))
+	}
+
+	forStmt, ok := program.Statements[0].(*ast.ForLoopStatement)
+	if !ok {
+		t.Fatalf("stmt not *ast.ForStatement. got=%T", program.Statements[0])
+	}
+
+	if forStmt.Initializer.String() != "let i = 0;" {
+		t.Fatalf("forStmt.Initializer not %s. got=%s", "let i = 0;", forStmt.Initializer.String())
+	}
+
+	if forStmt.Condition.String() != "(i < 10)" {
+		t.Fatalf("forStmt.Condition not %s. got=%s", "i < 10", forStmt.Condition.String())
+	}
+
+	if forStmt.Update.String() != "i = (i + 1);" {
+		t.Fatalf("forStmt.Runner not %s. got=%s", "i = (i + 1)", forStmt.Update.String())
+	}
+
+	if len(forStmt.Body.Statements) != 1 {
+		t.Fatalf("forStmt.Body.Statements has not 1 statements. got=%d\n", len(forStmt.Body.Statements))
+	}
+
+	bodyStmt, ok := forStmt.Body.Statements[0].(*ast.LetStatement)
+	if !ok {
+		t.Fatalf("for body stmt is not ast.LetStatement. got=%T", forStmt.Body.Statements[0])
+	}
+
+	if bodyStmt.Name.Value != "x" {
+		t.Fatalf("bodyStmt.Name.Value not %s. got=%s", "x", bodyStmt.Name.Value)
+	}
+
+	if bodyStmt.Value.String() != "5" {
+		t.Fatalf("bodyStmt.Value not %s. got=%s", "5", bodyStmt.Value.String())
+	}
+}
+
+func TestEmptyForLoop(t *testing.T) {
+	input := `
+	for (;;) {
+		break;
+	}
+	`
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	forStmt, ok := program.Statements[0].(*ast.ForLoopStatement)
+	if !ok {
+		t.Fatalf("stmt not *ast.ForStatement. got=%T", program.Statements[0])
+	}
+
+	if forStmt.Initializer != nil {
+		t.Fatalf("forStmt.Initializer not %s. got=%s", "nil", forStmt.Initializer.String())
+	}
+
+	if forStmt.Condition != nil {
+		t.Fatalf("forStmt.Condition not %s. got=%s", "nil", forStmt.Condition.String())
+	}
+
+	if forStmt.Update != nil {
+		t.Fatalf("forStmt.Runner not %s. got=%s", "nil", forStmt.Update.String())
+	}
+
+	if len(forStmt.Body.Statements) != 1 {
+		t.Fatalf("forStmt.Body.Statements has not 1 statements. got=%d\n", len(forStmt.Body.Statements))
+	}
+
+	bodyStmt, ok := forStmt.Body.Statements[0].(*ast.BreakStatement)
+	if !ok {
+		t.Fatalf("for body stmt is not ast.BreakStatement. got=%T", forStmt.Body.Statements[0])
+	}
+
+	if bodyStmt.TokenLiteral() != "break" {
+		t.Fatalf("bodyStmt.TokenLiteral not %s. got=%s", "break", bodyStmt.TokenLiteral())
+	}
+}
