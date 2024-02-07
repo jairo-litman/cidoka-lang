@@ -1,7 +1,7 @@
 package evaluator
 
 import (
-	"boludolang/object"
+	"cidoka/object"
 	"testing"
 )
 

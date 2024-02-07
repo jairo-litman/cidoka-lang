@@ -1,11 +1,11 @@
 package vm
 
 import (
-	"boludolang/ast"
-	"boludolang/compiler"
-	"boludolang/lexer"
-	"boludolang/object"
-	"boludolang/parser"
+	"cidoka/ast"
+	"cidoka/compiler"
+	"cidoka/lexer"
+	"cidoka/object"
+	"cidoka/parser"
 	"fmt"
 	"math"
 	"testing"

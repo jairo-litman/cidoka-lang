@@ -1,12 +1,12 @@
 package main
 
 import (
-	"boludolang/compiler"
-	"boludolang/evaluator"
-	"boludolang/lexer"
-	"boludolang/object"
-	"boludolang/parser"
-	"boludolang/vm"
+	"cidoka/compiler"
+	"cidoka/evaluator"
+	"cidoka/lexer"
+	"cidoka/object"
+	"cidoka/parser"
+	"cidoka/vm"
 	"flag"
 	"fmt"
 	"time"

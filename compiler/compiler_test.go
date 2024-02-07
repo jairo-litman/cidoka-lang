@@ -1,7 +1,7 @@
 package compiler
 
 import (
-	"boludolang/code"
+	"cidoka/code"
 	"testing"
 )
 

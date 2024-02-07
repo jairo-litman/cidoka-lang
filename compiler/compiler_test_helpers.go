@@ -1,11 +1,11 @@
 package compiler
 
 import (
-	"boludolang/ast"
-	"boludolang/code"
-	"boludolang/lexer"
-	"boludolang/object"
-	"boludolang/parser"
+	"cidoka/ast"
+	"cidoka/code"
+	"cidoka/lexer"
+	"cidoka/object"
+	"cidoka/parser"
 	"fmt"
 	"testing"
 )

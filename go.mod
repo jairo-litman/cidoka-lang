@@ -1,3 +1,3 @@
-module boludolang
+module cidoka
 
 go 1.20

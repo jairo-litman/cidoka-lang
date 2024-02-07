@@ -1,8 +1,8 @@
 package parser
 
 import (
-	"boludolang/ast"
-	"boludolang/lexer"
+	"cidoka/ast"
+	"cidoka/lexer"
 	"testing"
 )
 

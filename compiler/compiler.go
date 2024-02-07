@@ -1,9 +1,9 @@
 package compiler
 
 import (
-	"boludolang/ast"
-	"boludolang/code"
-	"boludolang/object"
+	"cidoka/ast"
+	"cidoka/code"
+	"cidoka/object"
 	"fmt"
 	"sort"
 )

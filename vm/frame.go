@@ -1,8 +1,8 @@
 package vm
 
 import (
-	"boludolang/code"
-	"boludolang/object"
+	"cidoka/code"
+	"cidoka/object"
 )
 
 type Frame struct {

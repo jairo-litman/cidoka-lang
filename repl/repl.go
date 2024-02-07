@@ -1,13 +1,13 @@
 package repl
 
 import (
-	"boludolang/compiler"
-	"boludolang/evaluator"
-	"boludolang/lexer"
-	"boludolang/object"
-	"boludolang/parser"
-	"boludolang/vm"
 	"bufio"
+	"cidoka/compiler"
+	"cidoka/evaluator"
+	"cidoka/lexer"
+	"cidoka/object"
+	"cidoka/parser"
+	"cidoka/vm"
 	"fmt"
 	"io"
 )

@@ -1,7 +1,7 @@
 package lexer
 
 import (
-	"boludolang/token"
+	"cidoka/token"
 	"testing"
 )
 

@@ -1,4 +1,4 @@
-# The Boludo Programming Language
+# The Cidoka Programming Language
 
 This repo is an implementation of the Monkey Programming Language. Built by following Thorsten Ball's two books on the topics of [interpreters](https://interpreterbook.com/) and [compilers](https://compilerbook.com/).
 
@@ -36,7 +36,7 @@ false
 
 **Strings**
 
-Strings are backed by go's native string type. Printing is supported via the built-in print() function. String concatenation is supported with the `+` operator. Strings in BoludoLang take the form of characters delimited by a pair of double quotes.
+Strings are backed by go's native string type. Printing is supported via the built-in print() function. String concatenation is supported with the `+` operator. Strings in Cidoka take the form of characters delimited by a pair of double quotes.
 
 Examples:
 
@@ -46,13 +46,13 @@ Examples:
 "Daniela"
 "Hugo"
 
-print("Boludo")
-"Boludo " + "Lang"
+print("Cidoka")
+"Cidoka " + "Lang"
 ```
 
 **Integers**
 
-Integers are backed by go's native int type. BoludoLang supports basic arithmetic operations on integers.
+Integers are backed by go's native int type. Cidoka supports basic arithmetic operations on integers.
 
 Examples:
 
@@ -70,7 +70,7 @@ Examples:
 
 **Arrays**
 
-Arrays are backed by go's native slice type. Arrays are not scoped to a particular type in BoludoLang so you can mix and match to your hearts content. BoludoLang arrays take the form:
+Arrays are backed by go's native slice type. Arrays are not scoped to a particular type in Cidoka so you can mix and match to your hearts content. Cidoka arrays take the form:
 
 `[<expression>, <expression>, ...];`
 
@@ -95,7 +95,7 @@ people[3] -> "Alejandro"
 
 **HashMaps/Dicts/Hashes**
 
-BoludoLang's kv data type is the Hash and it is backed by a go map. Like Arrays, they are not typed. Hashes take the form:
+Cidoka's kv data type is the Hash and it is backed by a go map. Like Arrays, they are not typed. Hashes take the form:
 
 `{<expression>:<expression, <expression>:<expression, ....};`
 
@@ -116,9 +116,9 @@ animals["Rod" + "rigo"] -> "parrot"
 
 **Functions**
 
-Functions are first class in BoludoLang. Additionally, closures are supported. If you don't have an explicit return in your BoludoLang function, it will implicitly return the last expression.
+Functions are first class in Cidoka. Additionally, closures are supported. If you don't have an explicit return in your Cidoka function, it will implicitly return the last expression.
 
-Functions in BoludoLang take the form:
+Functions in Cidoka take the form:
 
 ```
 fn(<optional comma-delimited identifiers>) {
@@ -162,9 +162,9 @@ closure(); -> 99
 
 **Statements**
 
-Programs in BoludoLang are a series of statements.
+Programs in Cidoka are a series of statements.
 
-Statements don't produce values. There are three types of statements in BoludoLang.
+Statements don't produce values. There are three types of statements in Cidoka.
 
 1. let statements
     - Bind expressions to an identifier
@@ -178,7 +178,7 @@ Statements don't produce values. There are three types of statements in BoludoLa
 
 Expressions produce values. These values can be reused in other expressions and combined with the statements listed in the previous section in order to bind an expression to a variable or return an expression...
 
-BoludoLang supports both infix and prefix expressions.
+Cidoka supports both infix and prefix expressions.
 
 **Let Statements**
 
@@ -194,11 +194,11 @@ let concat = "fizz" + "buzz"
 
 **If Expressions**
 
-BoludoLang supports conditional logic / flow control. This takes the form of:
+Cidoka supports conditional logic / flow control. This takes the form of:
 
 `if (<expression>) { <statements> } else { <statements> };`
 
-A nice feature of BoludoLang is it doesn't use if statements but rather if expressions. This allows you to assign to a variable based on conditional logic.
+A nice feature of Cidoka is it doesn't use if statements but rather if expressions. This allows you to assign to a variable based on conditional logic.
 
 ```
 let comparison = 5 > 3;
@@ -210,7 +210,7 @@ val -> "Greater than"
 
 ## Built-in Functions
 
-BoludoLang comes with a few built-in functions which are run in Go. These functions are:
+Cidoka comes with a few built-in functions which are run in Go. These functions are:
 
 * `len(<array | string>)`
     - returns the length of an array or string
