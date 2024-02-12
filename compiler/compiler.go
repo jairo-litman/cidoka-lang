@@ -183,10 +183,12 @@ func (c *Compiler) Compile(node ast.Node) error {
 
 		c.emit(code.OpBreak)
 
+		numLoc := c.symbolTable.numDefinitions
 		ins := c.leaveScope()
 
 		compiled := &object.CompiledFor{
 			Instructions: ins,
+			NumLocals:    numLoc,
 		}
 
 		idx := c.addConstant(compiled)

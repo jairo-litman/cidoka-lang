@@ -3,17 +3,21 @@ package token
 type TokenType string
 
 const (
+	// Special tokens
+
 	ILLEGAL TokenType = "ILLEGAL" // unknown token
 	EOF     TokenType = "EOF"     // end of file
 
 	// Identifiers + literals
+
 	IDENT  TokenType = "IDENT"  // add, foobar, x, y, ...
 	INT    TokenType = "INT"    // 1234567890
-	FLOAT  TokenType = "FLOAT"  // 123.456
+	FLOAT  TokenType = "FLOAT"  // 123456.0987
 	STRING TokenType = "STRING" // "foobar"
 
 	// Assignment operators
-	ASSIGN      TokenType = "="
+
+	ASSIGN      TokenType = "="  // assignment
 	PLUS_EQ     TokenType = "+=" // todo
 	MINUS_EQ    TokenType = "-=" // todo
 	ASTERISK_EQ TokenType = "*=" // todo
@@ -21,55 +25,62 @@ const (
 	MODULO_EQ   TokenType = "%=" // todo
 
 	// Arithmetic operators
-	PLUS     TokenType = "+"
-	MINUS    TokenType = "-"
-	ASTERISK TokenType = "*"
-	SLASH    TokenType = "/"
+
+	PLUS     TokenType = "+" // addition
+	MINUS    TokenType = "-" // subtraction
+	ASTERISK TokenType = "*" // multiplication
+	SLASH    TokenType = "/" // division
 	MODULO   TokenType = "%" // todo
 
 	// Comparison operators
-	EQ     TokenType = "=="
-	NOT_EQ TokenType = "!="
-	LT     TokenType = "<"
-	LT_EQ  TokenType = "<="
-	GT     TokenType = ">"
-	GT_EQ  TokenType = ">="
+
+	EQ     TokenType = "==" // equality
+	NOT_EQ TokenType = "!=" // inequality
+	LT     TokenType = "<"  // less than
+	LT_EQ  TokenType = "<=" // less than or equal to
+	GT     TokenType = ">"  // greater than
+	GT_EQ  TokenType = ">=" // greater than or equal to
 
 	// Logical operators
+
 	AND  TokenType = "&&" // todo
 	OR   TokenType = "||" // todo
-	BANG TokenType = "!"
+	BANG TokenType = "!"  // negation
 
 	// Delimiters
-	COMMA     TokenType = ","
-	SEMICOLON TokenType = ";"
-	COLON     TokenType = ":"
+
+	COMMA     TokenType = "," // separator
+	SEMICOLON TokenType = ";" // terminator
+	COLON     TokenType = ":" // separator
 
 	// Brackets
-	LPAREN   TokenType = "("
-	RPAREN   TokenType = ")"
-	LBRACE   TokenType = "{"
-	RBRACE   TokenType = "}"
-	LBRACKET TokenType = "["
-	RBRACKET TokenType = "]"
+
+	LPAREN   TokenType = "(" // left parenthesis
+	RPAREN   TokenType = ")" // right parenthesis
+	LBRACE   TokenType = "{" // left brace
+	RBRACE   TokenType = "}" // right brace
+	LBRACKET TokenType = "[" // left bracket
+	RBRACKET TokenType = "]" // right bracket
 
 	// Keywords
-	FUNCTION TokenType = "FUNCTION"
-	LET      TokenType = "LET"
-	TRUE     TokenType = "TRUE"
-	FALSE    TokenType = "FALSE"
-	IF       TokenType = "IF"
-	ELSE     TokenType = "ELSE"
-	RETURN   TokenType = "RETURN"
-	FOR      TokenType = "FOR"
-	BREAK    TokenType = "BREAK"
+
+	FUNCTION TokenType = "FUNCTION" // function
+	LET      TokenType = "LET"      // variable declaration
+	TRUE     TokenType = "TRUE"     // boolean true
+	FALSE    TokenType = "FALSE"    // boolean false
+	IF       TokenType = "IF"       // if statement
+	ELSE     TokenType = "ELSE"     // else statement
+	RETURN   TokenType = "RETURN"   // return statement
+	FOR      TokenType = "FOR"      // for loop
+	BREAK    TokenType = "BREAK"    // break statement
 )
 
 type Token struct {
-	Type    TokenType
-	Literal string
+	Type    TokenType // Type of token
+	Literal string    // Literal value of token
 }
 
+// Map of keywords to their TokenType constants.
 var keywords = map[string]TokenType{
 	"fn":     FUNCTION,
 	"let":    LET,
@@ -83,7 +94,7 @@ var keywords = map[string]TokenType{
 }
 
 /*
-LookupIdent checks the keywords table to see if the given identifier is a keyword.
+Checks the keywords table to see if the given identifier is a keyword.
 
 If it is, it returns the keyword's TokenType constant. If not, it's an identifier.
 */

@@ -5,160 +5,229 @@ import (
 	"testing"
 )
 
+type ExpectedToken struct {
+	expectedType    token.TokenType
+	expectedLiteral string
+}
+
 func TestNextToken(t *testing.T) {
-	input := `let five = 5;
-	let ten = 10;
-
-	let add = fn(x, y) {
-	x + y;
-	};
-
-	let result = add(five, ten);
-	!-/*5;
-	5 < 10 > 5;
-
-	if (5 < 10) {
-		return true;
-	} else {
-		return false;
-	}
-
-	10 == 10;
-	10 != 9;
-	"foobar"
-	"foo bar"
-	[1, 2];
-	{"foo": "bar"}
-	123.456
-	.123
-	0.456
-
-	let x = 5;
-	x = 10;
-
-	<= >=
-	`
-
 	tests := []struct {
-		expectedType    token.TokenType
-		expectedLiteral string
+		input    string
+		expected []ExpectedToken
 	}{
-		{token.LET, "let"},
-		{token.IDENT, "five"},
-		{token.ASSIGN, "="},
-		{token.INT, "5"},
-		{token.SEMICOLON, ";"},
-		{token.LET, "let"},
-		{token.IDENT, "ten"},
-		{token.ASSIGN, "="},
-		{token.INT, "10"},
-		{token.SEMICOLON, ";"},
-		{token.LET, "let"},
-		{token.IDENT, "add"},
-		{token.ASSIGN, "="},
-		{token.FUNCTION, "fn"},
-		{token.LPAREN, "("},
-		{token.IDENT, "x"},
-		{token.COMMA, ","},
-		{token.IDENT, "y"},
-		{token.RPAREN, ")"},
-		{token.LBRACE, "{"},
-		{token.IDENT, "x"},
-		{token.PLUS, "+"},
-		{token.IDENT, "y"},
-		{token.SEMICOLON, ";"},
-		{token.RBRACE, "}"},
-		{token.SEMICOLON, ";"},
-		{token.LET, "let"},
-		{token.IDENT, "result"},
-		{token.ASSIGN, "="},
-		{token.IDENT, "add"},
-		{token.LPAREN, "("},
-		{token.IDENT, "five"},
-		{token.COMMA, ","},
-		{token.IDENT, "ten"},
-		{token.RPAREN, ")"},
-		{token.SEMICOLON, ";"},
-		{token.BANG, "!"},
-		{token.MINUS, "-"},
-		{token.SLASH, "/"},
-		{token.ASTERISK, "*"},
-		{token.INT, "5"},
-		{token.SEMICOLON, ";"},
-		{token.INT, "5"},
-		{token.LT, "<"},
-		{token.INT, "10"},
-		{token.GT, ">"},
-		{token.INT, "5"},
-		{token.SEMICOLON, ";"},
-		{token.IF, "if"},
-		{token.LPAREN, "("},
-		{token.INT, "5"},
-		{token.LT, "<"},
-		{token.INT, "10"},
-		{token.RPAREN, ")"},
-		{token.LBRACE, "{"},
-		{token.RETURN, "return"},
-		{token.TRUE, "true"},
-		{token.SEMICOLON, ";"},
-		{token.RBRACE, "}"},
-		{token.ELSE, "else"},
-		{token.LBRACE, "{"},
-		{token.RETURN, "return"},
-		{token.FALSE, "false"},
-		{token.SEMICOLON, ";"},
-		{token.RBRACE, "}"},
-		{token.INT, "10"},
-		{token.EQ, "=="},
-		{token.INT, "10"},
-		{token.SEMICOLON, ";"},
-		{token.INT, "10"},
-		{token.NOT_EQ, "!="},
-		{token.INT, "9"},
-		{token.SEMICOLON, ";"},
-		{token.STRING, "foobar"},
-		{token.STRING, "foo bar"},
-		{token.LBRACKET, "["},
-		{token.INT, "1"},
-		{token.COMMA, ","},
-		{token.INT, "2"},
-		{token.RBRACKET, "]"},
-		{token.SEMICOLON, ";"},
-		{token.LBRACE, "{"},
-		{token.STRING, "foo"},
-		{token.COLON, ":"},
-		{token.STRING, "bar"},
-		{token.RBRACE, "}"},
-		{token.FLOAT, "123.456"},
-		{token.FLOAT, ".123"},
-		{token.FLOAT, "0.456"},
-		{token.LET, "let"},
-		{token.IDENT, "x"},
-		{token.ASSIGN, "="},
-		{token.INT, "5"},
-		{token.SEMICOLON, ";"},
-		{token.IDENT, "x"},
-		{token.ASSIGN, "="},
-		{token.INT, "10"},
-		{token.SEMICOLON, ";"},
-		{token.LT_EQ, "<="},
-		{token.GT_EQ, ">="},
-		{token.EOF, ""},
+		{
+			input: `let five = 5;
+			five = 10;`,
+			expected: []ExpectedToken{
+				{token.LET, "let"},
+				{token.IDENT, "five"},
+				{token.ASSIGN, "="},
+				{token.INT, "5"},
+				{token.SEMICOLON, ";"},
+				{token.IDENT, "five"},
+				{token.ASSIGN, "="},
+				{token.INT, "10"},
+				{token.SEMICOLON, ";"},
+				{token.EOF, ""},
+			},
+		},
+		{
+			input: `let add = fn(x, y) { x + y; };
+			let result = add(five, ten);`,
+			expected: []ExpectedToken{
+				{token.LET, "let"},
+				{token.IDENT, "add"},
+				{token.ASSIGN, "="},
+				{token.FUNCTION, "fn"},
+				{token.LPAREN, "("},
+				{token.IDENT, "x"},
+				{token.COMMA, ","},
+				{token.IDENT, "y"},
+				{token.RPAREN, ")"},
+				{token.LBRACE, "{"},
+				{token.IDENT, "x"},
+				{token.PLUS, "+"},
+				{token.IDENT, "y"},
+				{token.SEMICOLON, ";"},
+				{token.RBRACE, "}"},
+				{token.SEMICOLON, ";"},
+				{token.LET, "let"},
+				{token.IDENT, "result"},
+				{token.ASSIGN, "="},
+				{token.IDENT, "add"},
+				{token.LPAREN, "("},
+				{token.IDENT, "five"},
+				{token.COMMA, ","},
+				{token.IDENT, "ten"},
+				{token.RPAREN, ")"},
+				{token.SEMICOLON, ";"},
+				{token.EOF, ""},
+			},
+		},
+		{
+			input: `!-+/*;
+			< <= > >= == !=;`,
+			expected: []ExpectedToken{
+				{token.BANG, "!"},
+				{token.MINUS, "-"},
+				{token.PLUS, "+"},
+				{token.SLASH, "/"},
+				{token.ASTERISK, "*"},
+				{token.SEMICOLON, ";"},
+				{token.LT, "<"},
+				{token.LT_EQ, "<="},
+				{token.GT, ">"},
+				{token.GT_EQ, ">="},
+				{token.EQ, "=="},
+				{token.NOT_EQ, "!="},
+				{token.SEMICOLON, ";"},
+				{token.EOF, ""},
+			},
+		},
+		{
+			input: `if (5 < 10) {
+				return true;
+			} else {
+				return false;
+			}`,
+			expected: []ExpectedToken{
+				{token.IF, "if"},
+				{token.LPAREN, "("},
+				{token.INT, "5"},
+				{token.LT, "<"},
+				{token.INT, "10"},
+				{token.RPAREN, ")"},
+				{token.LBRACE, "{"},
+				{token.RETURN, "return"},
+				{token.TRUE, "true"},
+				{token.SEMICOLON, ";"},
+				{token.RBRACE, "}"},
+				{token.ELSE, "else"},
+				{token.LBRACE, "{"},
+				{token.RETURN, "return"},
+				{token.FALSE, "false"},
+				{token.SEMICOLON, ";"},
+				{token.RBRACE, "}"},
+				{token.EOF, ""},
+			},
+		},
+		{
+			input: `"foobar"
+			"foo bar"`,
+			expected: []ExpectedToken{
+				{token.STRING, "foobar"},
+				{token.STRING, "foo bar"},
+				{token.EOF, ""},
+			},
+		},
+		{
+			input: `[1, 2];
+			{"foo": "bar"}`,
+			expected: []ExpectedToken{
+				{token.LBRACKET, "["},
+				{token.INT, "1"},
+				{token.COMMA, ","},
+				{token.INT, "2"},
+				{token.RBRACKET, "]"},
+				{token.SEMICOLON, ";"},
+				{token.LBRACE, "{"},
+				{token.STRING, "foo"},
+				{token.COLON, ":"},
+				{token.STRING, "bar"},
+				{token.RBRACE, "}"},
+				{token.EOF, ""},
+			},
+		},
+		{
+			input: `123.456
+			.123
+			0.456`,
+			expected: []ExpectedToken{
+				{token.FLOAT, "123.456"},
+				{token.FLOAT, ".123"},
+				{token.FLOAT, "0.456"},
+				{token.EOF, ""},
+			},
+		},
+		{
+			input: `for (let i = 0; i < 10; i = i + 1) {
+				break;
+			}`,
+			expected: []ExpectedToken{
+				{token.FOR, "for"},
+				{token.LPAREN, "("},
+				{token.LET, "let"},
+				{token.IDENT, "i"},
+				{token.ASSIGN, "="},
+				{token.INT, "0"},
+				{token.SEMICOLON, ";"},
+				{token.IDENT, "i"},
+				{token.LT, "<"},
+				{token.INT, "10"},
+				{token.SEMICOLON, ";"},
+				{token.IDENT, "i"},
+				{token.ASSIGN, "="},
+				{token.IDENT, "i"},
+				{token.PLUS, "+"},
+				{token.INT, "1"},
+				{token.RPAREN, ")"},
+				{token.LBRACE, "{"},
+				{token.BREAK, "break"},
+				{token.SEMICOLON, ";"},
+				{token.RBRACE, "}"},
+				{token.EOF, ""},
+			},
+		},
+		{
+			input: `let x = 12.34.56`,
+			expected: []ExpectedToken{
+				{token.LET, "let"},
+				{token.IDENT, "x"},
+				{token.ASSIGN, "="},
+				{token.ILLEGAL, "12.34.56"},
+				{token.EOF, ""},
+			},
+		},
+		{
+			input: `let x = 12.34;56;`,
+			expected: []ExpectedToken{
+				{token.LET, "let"},
+				{token.IDENT, "x"},
+				{token.ASSIGN, "="},
+				{token.FLOAT, "12.34"},
+				{token.SEMICOLON, ";"},
+				{token.INT, "56"},
+				{token.SEMICOLON, ";"},
+				{token.EOF, ""},
+			},
+		},
+		{
+			input: `let x = 12.`,
+			expected: []ExpectedToken{
+				{token.LET, "let"},
+				{token.IDENT, "x"},
+				{token.ASSIGN, "="},
+				{token.FLOAT, "12."},
+				{token.EOF, ""},
+			},
+		},
 	}
 
-	l := New(input)
+	for _, tt := range tests {
+		l := New(tt.input)
 
-	for i, tt := range tests {
-		tok := l.NextToken()
+		for i, ts := range tt.expected {
+			tok := l.NextToken()
 
-		if tok.Type != tt.expectedType {
-			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q",
-				i, tt.expectedType, tok.Type)
-		}
+			if tok.Type != ts.expectedType {
+				t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q",
+					i, ts.expectedType, tok.Type)
+			}
 
-		if tok.Literal != tt.expectedLiteral {
-			t.Fatalf("tests[%d] - literal wrong. expected=%q, got=%q",
-				i, tt.expectedLiteral, tok.Literal)
+			if tok.Literal != ts.expectedLiteral {
+				t.Fatalf("tests[%d] - literal wrong. expected=%q, got=%q",
+					i, ts.expectedLiteral, tok.Literal)
+			}
 		}
 	}
 }

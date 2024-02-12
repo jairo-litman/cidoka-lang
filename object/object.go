@@ -224,6 +224,7 @@ func (b *Break) Inspect() string  { return "break" }
 
 type CompiledFor struct {
 	Instructions code.Instructions
+	NumLocals    int
 }
 
 func (cf *CompiledFor) Type() ObjectType { return COMPILED_FOR_OBJ }

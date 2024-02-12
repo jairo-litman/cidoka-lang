@@ -9,24 +9,25 @@ import (
 
 // The base Node interface
 type Node interface {
-	TokenLiteral() string
-	String() string
+	TokenLiteral() string // returns the literal value of the token
+	String() string       // returns a string representation of the node
 }
 
 // All statement nodes implement this
 type Statement interface {
 	Node
-	statementNode()
+	statementNode() // dummy method to distinguish statements from expressions
 }
 
 // All expression nodes implement this
 type Expression interface {
 	Node
-	expressionNode()
+	expressionNode() // dummy method to distinguish expressions from statements
 }
 
+// Program is the root node of every AST
 type Program struct {
-	Statements []Statement
+	Statements []Statement // a slice of statements
 }
 
 func (prog *Program) TokenLiteral() string {
@@ -36,7 +37,6 @@ func (prog *Program) TokenLiteral() string {
 		return ""
 	}
 }
-
 func (prog *Program) String() string {
 	var out bytes.Buffer
 
@@ -47,12 +47,15 @@ func (prog *Program) String() string {
 	return out.String()
 }
 
-// Statements
+// ----------------------------------------------------------------------------
+// 									Statements
+// ----------------------------------------------------------------------------
 
+// A let statement, e.g. let x = 5;
 type LetStatement struct {
-	Token token.Token // the token.LET token
-	Name  *Identifier
-	Value Expression
+	Token token.Token // token.LET
+	Name  *Identifier // name of the variable
+	Value Expression  // expression that evaluates to the value of the variable
 }
 
 func (letStmt *LetStatement) statementNode()       {}
@@ -73,10 +76,11 @@ func (letStmt *LetStatement) String() string {
 	return out.String()
 }
 
+// An assign statement, e.g. x = 5;
 type AssignStatement struct {
-	Token token.Token // the token.ASSIGN token
-	Name  *Identifier
-	Value Expression
+	Token token.Token // token.ASSIGN
+	Name  *Identifier // name of the variable
+	Value Expression  // expression that evaluates to the value of the variable
 }
 
 func (assignStmt *AssignStatement) statementNode()       {}
@@ -96,9 +100,10 @@ func (assignStmt *AssignStatement) String() string {
 	return out.String()
 }
 
+// A return statement, e.g. return 5;
 type ReturnStatement struct {
-	Token       token.Token // the token.RETURN token
-	ReturnValue Expression
+	Token       token.Token // token.RETURN
+	ReturnValue Expression  // expression that evaluates to the value to return
 }
 
 func (returnStmt *ReturnStatement) statementNode()       {}
@@ -117,9 +122,10 @@ func (returnStmt *ReturnStatement) String() string {
 	return out.String()
 }
 
+// An expression statement, e.g. 5 + 5;
 type ExpressionStatement struct {
-	Token      token.Token // the first token of the expression
-	Expression Expression
+	Token      token.Token // first token of the expression
+	Expression Expression  // the expression
 }
 
 func (exprStmt *ExpressionStatement) statementNode()       {}
@@ -131,9 +137,10 @@ func (exprStmt *ExpressionStatement) String() string {
 	return ""
 }
 
+// A block statement, e.g. { let x = 5; let y = 10; }
 type BlockStatement struct {
-	Token      token.Token // the token.LBRACE token '{'
-	Statements []Statement
+	Token      token.Token // token.LBRACE '{'
+	Statements []Statement // a slice of statements that make up the block
 }
 
 func (blockStmt *BlockStatement) statementNode()       {}
@@ -148,12 +155,13 @@ func (blockStmt *BlockStatement) String() string {
 	return out.String()
 }
 
+// A for loop statement, e.g. for (let i = 0; i < 10; i = i + 1) { ... }
 type ForLoopStatement struct {
-	Token       token.Token // the token.FOR token
-	Initializer Statement
-	Condition   Expression
-	Update      Statement
-	Body        *BlockStatement
+	Token       token.Token     // token.FOR
+	Initializer Statement       // statement that initializes the loop e.g. let i = 0 // or nil
+	Condition   Expression      // expression that evaluates to the condition of the loop e.g. i < 10 // or nil
+	Update      Statement       // statement that updates the loop e.g. i = i + 1 // or nil
+	Body        *BlockStatement // block statement that makes up the body of the loop
 }
 
 func (forLoop *ForLoopStatement) statementNode()       {}
@@ -188,65 +196,74 @@ func (forLoop *ForLoopStatement) String() string {
 	return out.String()
 }
 
+// A break statement, e.g. break;
 type BreakStatement struct {
-	Token token.Token // the token.BREAK token
+	Token token.Token // token.BREAK
 }
 
 func (breakStmt *BreakStatement) statementNode()       {}
 func (breakStmt *BreakStatement) TokenLiteral() string { return breakStmt.Token.Literal }
 func (breakStmt *BreakStatement) String() string       { return breakStmt.TokenLiteral() }
 
-// Expressions
+// ----------------------------------------------------------------------------
+// 								Expressions
+// ----------------------------------------------------------------------------
 
+// An identifier expression, e.g. x
 type Identifier struct {
-	Token token.Token // the token.IDENT token
-	Value string
+	Token token.Token // token.IDENT
+	Value string      // name of the identifier // should be the same as the token literal
 }
 
 func (ident *Identifier) expressionNode()      {}
 func (ident *Identifier) TokenLiteral() string { return ident.Token.Literal }
 func (ident *Identifier) String() string       { return ident.Value }
 
+// An integer literal expression, e.g. 5
 type IntegerLiteral struct {
-	Token token.Token // the token.INT token
-	Value int64
+	Token token.Token // token.INT
+	Value int64       // value of the integer
 }
 
 func (intLit *IntegerLiteral) expressionNode()      {}
 func (intLit *IntegerLiteral) TokenLiteral() string { return intLit.Token.Literal }
 func (intLit *IntegerLiteral) String() string       { return intLit.Token.Literal }
 
+// A float literal expression, e.g. 5.5
 type FloatLiteral struct {
-	Token token.Token // the token.FLOAT token
-	Value float64
+	Token token.Token // token.FLOAT
+	Value float64     // value of the float
 }
 
 func (floatLit *FloatLiteral) expressionNode()      {}
 func (floatLit *FloatLiteral) TokenLiteral() string { return floatLit.Token.Literal }
 func (floatLit *FloatLiteral) String() string       { return floatLit.Token.Literal }
 
+// A boolean expression, e.g. true or false
 type Boolean struct {
-	Token token.Token // the token.TRUE or token.FALSE token
-	Value bool
+	Token token.Token // token.TRUE or token.FALSE
+	Value bool        // value of the boolean
 }
 
 func (boolExpr *Boolean) expressionNode()      {}
 func (boolExpr *Boolean) TokenLiteral() string { return boolExpr.Token.Literal }
 func (boolExpr *Boolean) String() string       { return boolExpr.Token.Literal }
 
+// A string literal expression, e.g. "foobar"
 type StringLiteral struct {
-	Token token.Token // the token.STRING token
-	Value string
+	Token token.Token // token.STRING
+	Value string      // value of the string
 }
 
 func (strLit *StringLiteral) expressionNode()      {}
 func (strLit *StringLiteral) TokenLiteral() string { return strLit.Token.Literal }
 func (strLit *StringLiteral) String() string       { return strLit.Token.Literal }
 
+// A prefix expression, e.g. !5 or -15
 type PrefixExpression struct {
-	Token    token.Token // the prefix token, e.g. !
-	Operator string
-	Right    Expression
+	Token    token.Token // the prefix token, e.g. token.BANG or token.MINUS
+	Operator string      // operator to be applied to the right expression
+	Right    Expression  // right expression to be evaluated
 }
 
 func (prefixExpr *PrefixExpression) expressionNode()      {}
@@ -262,11 +279,12 @@ func (prefixExpr *PrefixExpression) String() string {
 	return out.String()
 }
 
+// An infix expression, e.g. 5 + 5
 type InfixExpression struct {
-	Token    token.Token // the infix token, e.g. +
-	Left     Expression
-	Operator string
-	Right    Expression
+	Token    token.Token // infix token, e.g. token.PLUS or token.MINUS
+	Left     Expression  // left expression to be evaluated
+	Operator string      // operator to be applied to the left and right expressions
+	Right    Expression  // right expression to be evaluated
 }
 
 func (infixExpr *InfixExpression) expressionNode()      {}
@@ -283,11 +301,12 @@ func (infixExpr *InfixExpression) String() string {
 	return out.String()
 }
 
+// An if expression, e.g. if (x < y) { x } else { y }
 type IfExpression struct {
-	Token       token.Token // the token.IF token
-	Condition   Expression
-	Consequence *BlockStatement
-	Alternative *BlockStatement
+	Token       token.Token     // token.IF
+	Condition   Expression      // expression that evaluates to the condition of the if statement
+	Consequence *BlockStatement // block statement that makes up the body of the if statement
+	Alternative *BlockStatement // block statement that makes up the body of the else statement // or nil
 }
 
 func (ifExpr *IfExpression) expressionNode()      {}
@@ -308,11 +327,12 @@ func (ifExpr *IfExpression) String() string {
 	return out.String()
 }
 
+// A function literal, e.g. fn(x, y) { x + y; }
 type FunctionLiteral struct {
-	Token      token.Token // the token.FUNCTION token
-	Parameters []*Identifier
-	Body       *BlockStatement
-	Name       string
+	Token      token.Token     // token.FUNCTION
+	Parameters []*Identifier   // slice of identifiers that make up the parameters of the function
+	Body       *BlockStatement // block statement that makes up the body of the function
+	Name       string          // name of the function // should be the same as the token literal // or ""
 }
 
 func (funcLit *FunctionLiteral) expressionNode()      {}
@@ -337,10 +357,11 @@ func (funcLit *FunctionLiteral) String() string {
 	return out.String()
 }
 
+// A function call expression, e.g. add(1, 2)
 type CallExpression struct {
-	Token     token.Token // the token.LPAREN token
-	Function  Expression  // Identifier or FunctionLiteral
-	Arguments []Expression
+	Token     token.Token  // token.LPAREN '('
+	Function  Expression   // Identifier or FunctionLiteral
+	Arguments []Expression // slice of expressions that make up the arguments of the function
 }
 
 func (callExpr *CallExpression) expressionNode()      {}
@@ -361,9 +382,10 @@ func (callExpr *CallExpression) String() string {
 	return out.String()
 }
 
+// An array literal, e.g. [1, 2, 3]
 type ArrayLiteral struct {
-	Token    token.Token // the token.LBRACKET token '['
-	Elements []Expression
+	Token    token.Token  // token.LBRACKET '['
+	Elements []Expression // slice of expressions that make up the elements of the array
 }
 
 func (arrLit *ArrayLiteral) expressionNode()      {}
@@ -383,9 +405,10 @@ func (arrLit *ArrayLiteral) String() string {
 	return out.String()
 }
 
+// A hash literal, e.g. {"one": 1, "two": 2}
 type HashLiteral struct {
-	Token token.Token // the token.LBRACE token '{'
-	Pairs map[Expression]Expression
+	Token token.Token               // token.LBRACE '{'
+	Pairs map[Expression]Expression // map of key-value pairs that make up the hashmap
 }
 
 func (hashLit *HashLiteral) expressionNode()      {}
@@ -405,10 +428,11 @@ func (hashLit *HashLiteral) String() string {
 	return out.String()
 }
 
+// An index expression, e.g. array[1]
 type IndexExpression struct {
-	Token token.Token // the token.LBRACKET token '['
-	Left  Expression
-	Index Expression
+	Token token.Token // token.LBRACKET '['
+	Left  Expression  // expression to be indexed e.g. array literal
+	Index Expression  // expression that evaluates to the index
 }
 
 func (indexExpr *IndexExpression) expressionNode()      {}

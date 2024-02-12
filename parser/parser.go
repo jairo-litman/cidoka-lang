@@ -11,15 +11,22 @@ import (
 const (
 	_ int = iota
 	LOWEST
-	EQUALS      // ==
-	LESSGREATER // < or >
-	SUM         // +
-	PRODUCT     // *
+	EQUALS      // == or !=
+	LESSGREATER // <, >, <=, or >=
+	SUM         // + or -
+	PRODUCT     // * or /
 	PREFIX      // -X or !X
 	CALL        // myFunction(X)
 	INDEX       // array[index]
 )
 
+/*
+Maps token types to their respective precedences
+
+The precedence of an operator determines how the operator is grouped with its operands.
+For example, the expression 5 + 10 * 2 is grouped as 5 + (10 * 2) because the * operator
+has a higher precedence than the + operator.
+*/
 var precedences = map[token.TokenType]int{
 	token.EQ:       EQUALS,
 	token.NOT_EQ:   EQUALS,
@@ -41,18 +48,21 @@ type (
 )
 
 type Parser struct {
-	lex    *lexer.Lexer
-	errors []string
+	lex    *lexer.Lexer // lexer instance
+	errors []string     // parsing errors
 
-	curToken  token.Token
-	peekToken token.Token
+	curToken  token.Token // current token
+	peekToken token.Token // next token
 
-	prefixParseFns map[token.TokenType]prefixParseFn
-	infixParseFns  map[token.TokenType]infixParseFn
+	prefixParseFns map[token.TokenType]prefixParseFn // prefix parse functions
+	infixParseFns  map[token.TokenType]infixParseFn  // infix parse functions
 }
 
-// General methods
+// ----------------------------------------------------------------------------
+// 							 General methods
+// ----------------------------------------------------------------------------
 
+/* New returns a new Parser instance fully initialized */
 func New(lex *lexer.Lexer) *Parser {
 	parser := &Parser{
 		lex:    lex,
@@ -102,19 +112,27 @@ func New(lex *lexer.Lexer) *Parser {
 	return parser
 }
 
+/* Moves the parser to the next token */
 func (parser *Parser) nextToken() {
 	parser.curToken = parser.peekToken
 	parser.peekToken = parser.lex.NextToken()
 }
 
+/* Returns True if the current token is of type t, False otherwise */
 func (parser *Parser) curTokenIs(t token.TokenType) bool {
 	return parser.curToken.Type == t
 }
 
+/* Returns True if the next token is of type t, False otherwise */
 func (parser *Parser) peekTokenIs(t token.TokenType) bool {
 	return parser.peekToken.Type == t
 }
 
+/*
+Moves the parser to the next token if the next token is of type t and returns True.
+
+Otherwise it appends an error message to the parser's errors list and returns False
+*/
 func (parser *Parser) expectPeek(t token.TokenType) bool {
 	if parser.peekTokenIs(t) {
 		parser.nextToken()
@@ -125,24 +143,47 @@ func (parser *Parser) expectPeek(t token.TokenType) bool {
 	}
 }
 
-// Error handling methods
+// ----------------------------------------------------------------------------
+// 							Error handling methods
+// ----------------------------------------------------------------------------
 
+/* Returns a slice of the parsing errors as strings */
 func (parser *Parser) Errors() []string {
 	return parser.errors
 }
 
+/* Appends an error message to the parser's errors list when the peekToken pointer didn't match the expected next token */
 func (parser *Parser) peekError(t token.TokenType) {
 	msg := fmt.Sprintf("expected next token to be %s, got %s instead", t, parser.peekToken.Type)
 	parser.errors = append(parser.errors, msg)
 }
 
+/* Appends an error message to the parser's errors list when no prefix parse function was found for a token type */
 func (parser *Parser) noPrefixParseFnError(t token.TokenType) {
 	msg := fmt.Sprintf("no prefix parse function for %s found", t)
 	parser.errors = append(parser.errors, msg)
 }
 
-// Parsing methods
+func (parser *Parser) forLoopInvalidInitializerError() {
+	msg := "FOR loop: expected let, identifier or empty initializer followed by a semicolon"
+	parser.errors = append(parser.errors, msg)
+}
 
+func (parser *Parser) integerParseError() {
+	msg := fmt.Sprintf("could not parse %q as integer", parser.curToken.Literal)
+	parser.errors = append(parser.errors, msg)
+}
+
+func (parser *Parser) floatParseError() {
+	msg := fmt.Sprintf("could not parse %q as float", parser.curToken.Literal)
+	parser.errors = append(parser.errors, msg)
+}
+
+// ----------------------------------------------------------------------------
+// 							  Parsing methods
+// ----------------------------------------------------------------------------
+
+/* Parses the input and returns the resulting AST */
 func (parser *Parser) ParseProgram() *ast.Program {
 	program := &ast.Program{}
 	program.Statements = []ast.Statement{}
@@ -158,8 +199,11 @@ func (parser *Parser) ParseProgram() *ast.Program {
 	return program
 }
 
-// Statements
+// ----------------------------------------------------------------------------
+// 								Statements
+// ----------------------------------------------------------------------------
 
+/* Parses a statement and returns the resulting AST node */
 func (parser *Parser) parseStatement() ast.Statement {
 	switch parser.curToken.Type {
 	case token.LET:
@@ -171,10 +215,10 @@ func (parser *Parser) parseStatement() ast.Statement {
 	case token.BREAK:
 		return parser.parseBreakStatement()
 	case token.IDENT:
-		if parser.peekTokenIs(token.ASSIGN) {
+		if parser.peekTokenIs(token.ASSIGN) { // check if it's an assign statement
 			return parser.parseAssignStatement()
 		}
-		fallthrough
+		fallthrough // if it's not an assign statement, parse it as an expression statement
 	default:
 		expr := parser.parseExpressionStatement()
 		if expr != nil && expr.Expression != nil {
@@ -184,6 +228,7 @@ func (parser *Parser) parseStatement() ast.Statement {
 	return nil
 }
 
+/* Parses a let statement and returns the resulting AST node */
 func (parser *Parser) parseLetStatement() *ast.LetStatement {
 	stmt := &ast.LetStatement{Token: parser.curToken}
 
@@ -212,6 +257,7 @@ func (parser *Parser) parseLetStatement() *ast.LetStatement {
 	return stmt
 }
 
+/* Parses a return statement and returns the resulting AST node */
 func (parser *Parser) parseReturnStatement() *ast.ReturnStatement {
 	stmt := &ast.ReturnStatement{Token: parser.curToken}
 
@@ -226,13 +272,14 @@ func (parser *Parser) parseReturnStatement() *ast.ReturnStatement {
 	return stmt
 }
 
+/* Parses an assign statement and returns the resulting AST node */
 func (parser *Parser) parseAssignStatement() *ast.AssignStatement {
 	stmt := &ast.AssignStatement{}
 	stmt.Name = &ast.Identifier{Token: parser.curToken, Value: parser.curToken.Literal}
 
 	parser.nextToken()
-
 	stmt.Token = parser.curToken
+
 	parser.nextToken()
 
 	stmt.Value = parser.parseExpression(LOWEST)
@@ -244,6 +291,7 @@ func (parser *Parser) parseAssignStatement() *ast.AssignStatement {
 	return stmt
 }
 
+/* Parses an expression statement and returns the resulting AST node */
 func (parser *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	stmt := &ast.ExpressionStatement{Token: parser.curToken}
 
@@ -256,6 +304,7 @@ func (parser *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	return stmt
 }
 
+/* Parses a for loop statement and returns the resulting AST node */
 func (parser *Parser) parseForLoopStatement() ast.Statement {
 	stmt := &ast.ForLoopStatement{Token: parser.curToken}
 
@@ -264,7 +313,6 @@ func (parser *Parser) parseForLoopStatement() ast.Statement {
 	}
 
 	parser.nextToken()
-
 	switch parser.curToken.Type {
 	case token.LET:
 		stmt.Initializer = parser.parseLetStatement()
@@ -273,6 +321,7 @@ func (parser *Parser) parseForLoopStatement() ast.Statement {
 	case token.SEMICOLON:
 		stmt.Initializer = nil
 	default:
+		parser.forLoopInvalidInitializerError()
 		return nil
 	}
 
@@ -309,6 +358,7 @@ func (parser *Parser) parseForLoopStatement() ast.Statement {
 	return stmt
 }
 
+/* Parses a break statement and returns the resulting AST node */
 func (parser *Parser) parseBreakStatement() *ast.BreakStatement {
 	stmt := &ast.BreakStatement{Token: parser.curToken}
 
@@ -319,8 +369,11 @@ func (parser *Parser) parseBreakStatement() *ast.BreakStatement {
 	return stmt
 }
 
-// Expressions
+// ----------------------------------------------------------------------------
+// 								Expressions
+// ----------------------------------------------------------------------------
 
+/* Parses an expression and returns the resulting AST node */
 func (parser *Parser) parseExpression(precedence int) ast.Expression {
 	prefix := parser.prefixParseFns[parser.curToken.Type]
 	if prefix == nil {
@@ -343,17 +396,18 @@ func (parser *Parser) parseExpression(precedence int) ast.Expression {
 	return leftExp
 }
 
+/* Parses an identifier and returns the resulting AST node */
 func (parser *Parser) parseIdentifier() ast.Expression {
 	return &ast.Identifier{Token: parser.curToken, Value: parser.curToken.Literal}
 }
 
+/* Parses an integer literal and returns the resulting AST node */
 func (parser *Parser) parseIntegerLiteral() ast.Expression {
 	lit := &ast.IntegerLiteral{Token: parser.curToken}
 
 	value, err := strconv.ParseInt(parser.curToken.Literal, 0, 64)
 	if err != nil {
-		msg := fmt.Sprintf("could not parse %q as integer", parser.curToken.Literal)
-		parser.errors = append(parser.errors, msg)
+		parser.integerParseError()
 		return nil
 	}
 
@@ -362,13 +416,13 @@ func (parser *Parser) parseIntegerLiteral() ast.Expression {
 	return lit
 }
 
+/* Parses a float literal and returns the resulting AST node */
 func (parser *Parser) parseFloatLiteral() ast.Expression {
 	lit := &ast.FloatLiteral{Token: parser.curToken}
 
 	value, err := strconv.ParseFloat(parser.curToken.Literal, 64)
 	if err != nil {
-		msg := fmt.Sprintf("could not parse %q as float", parser.curToken.Literal)
-		parser.errors = append(parser.errors, msg)
+		parser.floatParseError()
 		return nil
 	}
 
@@ -377,14 +431,17 @@ func (parser *Parser) parseFloatLiteral() ast.Expression {
 	return lit
 }
 
+/* Parses a boolean and returns the resulting AST node */
 func (parser *Parser) parseBoolean() ast.Expression {
 	return &ast.Boolean{Token: parser.curToken, Value: parser.curTokenIs(token.TRUE)}
 }
 
+/* Parses a string literal and returns the resulting AST node */
 func (parser *Parser) parseStringLiteral() ast.Expression {
 	return &ast.StringLiteral{Token: parser.curToken, Value: parser.curToken.Literal}
 }
 
+/* Parses a prefix expression and returns the resulting AST node */
 func (parser *Parser) parsePrefixExpression() ast.Expression {
 	expression := &ast.PrefixExpression{
 		Token:    parser.curToken,
@@ -398,6 +455,7 @@ func (parser *Parser) parsePrefixExpression() ast.Expression {
 	return expression
 }
 
+/* Parses an infix expression and returns the resulting AST node */
 func (parser *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	expression := &ast.InfixExpression{
 		Token:    parser.curToken,
@@ -412,6 +470,7 @@ func (parser *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	return expression
 }
 
+/* Parses a grouped expression and returns the resulting AST node */
 func (parser *Parser) parseGroupedExpression() ast.Expression {
 	parser.nextToken()
 
@@ -424,6 +483,7 @@ func (parser *Parser) parseGroupedExpression() ast.Expression {
 	return exp
 }
 
+/* Parses an if expression and returns the resulting AST node */
 func (parser *Parser) parseIfExpression() ast.Expression {
 	expression := &ast.IfExpression{Token: parser.curToken}
 
@@ -444,6 +504,7 @@ func (parser *Parser) parseIfExpression() ast.Expression {
 
 	expression.Consequence = parser.parseBlockStatement()
 
+	// TODO: Add support for else if statements
 	if parser.peekTokenIs(token.ELSE) {
 		parser.nextToken()
 
@@ -457,6 +518,7 @@ func (parser *Parser) parseIfExpression() ast.Expression {
 	return expression
 }
 
+/* Parses a block statement and returns the resulting AST node */
 func (parser *Parser) parseBlockStatement() *ast.BlockStatement {
 	block := &ast.BlockStatement{Token: parser.curToken}
 	block.Statements = []ast.Statement{}
@@ -474,6 +536,7 @@ func (parser *Parser) parseBlockStatement() *ast.BlockStatement {
 	return block
 }
 
+/* Parses a function literal and returns the resulting AST node */
 func (parser *Parser) parseFunctionLiteral() ast.Expression {
 	lit := &ast.FunctionLiteral{Token: parser.curToken}
 
@@ -492,6 +555,7 @@ func (parser *Parser) parseFunctionLiteral() ast.Expression {
 	return lit
 }
 
+/* Parses function parameters and returns a slice of the resulting AST nodes */
 func (parser *Parser) parseFunctionParameters() []*ast.Identifier {
 	identifiers := []*ast.Identifier{}
 
@@ -520,18 +584,21 @@ func (parser *Parser) parseFunctionParameters() []*ast.Identifier {
 	return identifiers
 }
 
+/* Parses a call expression and returns the resulting AST node */
 func (parser *Parser) parseCallExpression(function ast.Expression) ast.Expression {
 	exp := &ast.CallExpression{Token: parser.curToken, Function: function}
 	exp.Arguments = parser.parseExpressionList(token.RPAREN)
 	return exp
 }
 
+/* Parses an array literal and returns the resulting AST node */
 func (parser *Parser) parseArrayLiteral() ast.Expression {
 	array := &ast.ArrayLiteral{Token: parser.curToken}
 	array.Elements = parser.parseExpressionList(token.RBRACKET)
 	return array
 }
 
+/* Parses a list of expressions and returns a slice of the resulting AST nodes */
 func (parser *Parser) parseExpressionList(end token.TokenType) []ast.Expression {
 	list := []ast.Expression{}
 
@@ -556,6 +623,7 @@ func (parser *Parser) parseExpressionList(end token.TokenType) []ast.Expression 
 	return list
 }
 
+/* Parses an index expression and returns the resulting AST node */
 func (parser *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 	exp := &ast.IndexExpression{Token: parser.curToken, Left: left}
 
@@ -569,6 +637,7 @@ func (parser *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
 	return exp
 }
 
+/* Parses a hash literal and returns the resulting AST node */
 func (parser *Parser) parseHashLiteral() ast.Expression {
 	hash := &ast.HashLiteral{Token: parser.curToken}
 	hash.Pairs = make(map[ast.Expression]ast.Expression)
@@ -598,8 +667,11 @@ func (parser *Parser) parseHashLiteral() ast.Expression {
 	return hash
 }
 
-// Helper methods
+// ----------------------------------------------------------------------------
+// 								Helper methods
+// ----------------------------------------------------------------------------
 
+/* Returns the precedence of the next token */
 func (parser *Parser) peekPrecedence() int {
 	if p, ok := precedences[parser.peekToken.Type]; ok {
 		return p
@@ -608,6 +680,7 @@ func (parser *Parser) peekPrecedence() int {
 	return LOWEST
 }
 
+/* Returns the precedence of the current token */
 func (parser *Parser) curPrecedence() int {
 	if p, ok := precedences[parser.curToken.Type]; ok {
 		return p
@@ -616,10 +689,12 @@ func (parser *Parser) curPrecedence() int {
 	return LOWEST
 }
 
+/* Registers a prefix parse function for a token type */
 func (parser *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFn) {
 	parser.prefixParseFns[tokenType] = fn
 }
 
+/* Registers an infix parse function for a token type */
 func (parser *Parser) registerInfix(tokenType token.TokenType, fn infixParseFn) {
 	parser.infixParseFns[tokenType] = fn
 }

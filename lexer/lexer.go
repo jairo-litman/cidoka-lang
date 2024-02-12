@@ -5,18 +5,20 @@ import (
 )
 
 type Lexer struct {
-	input        string
-	position     int  // current position in input (points to current char)
-	readPosition int  // current reading position in input (after current char)
-	ch           byte // current char under examination
+	input        string // input to be tokenized
+	position     int    // current position in input (points to current char)
+	readPosition int    // current reading position in input (after current char)
+	ch           byte   // current char under examination
 }
 
+/* Returns a new Lexer instance fully initialized */
 func New(input string) *Lexer {
 	l := &Lexer{input: input}
 	l.readChar()
 	return l
 }
 
+/* Returns the next token from the input */
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 
@@ -92,22 +94,22 @@ func (l *Lexer) NextToken() token.Token {
 		tok.Literal = ""
 		tok.Type = token.EOF
 	default:
-		if isLetter(l.ch) {
+		switch {
+		// if it's a letter, it's an identifier or a keyword
+		case isLetter(l.ch):
 			tok.Literal = l.readIdentifier()
 			tok.Type = token.LookupIdent(tok.Literal)
 			return tok
-		} else if isDigit(l.ch) || (l.ch == '.' && isDigit(l.peekChar())) {
-			lit, isFloat := l.readNumber()
 
-			tok.Literal = lit
-			tok.Type = token.INT
-
-			if isFloat {
-				tok.Type = token.FLOAT
-			}
+		// if it's a digit or a dot followed by a digit, it's a number
+		// THIS CAN ALSO THROW AN ILLEGAL TOKEN DUE TO MALFORMED NUMBERS
+		case isDigit(l.ch) || (l.ch == '.' && isDigit(l.peekChar())):
+			tok.Literal, tok.Type = l.readNumber()
 
 			return tok
-		} else {
+
+		// if it's none of the above, it's an illegal token
+		default:
 			tok = newToken(token.ILLEGAL, l.ch)
 		}
 	}
@@ -116,12 +118,21 @@ func (l *Lexer) NextToken() token.Token {
 	return tok
 }
 
+/*
+Skips any whitespace characters in the input
+
+These are ' ', '\t', '\n' and '\r'
+*/
 func (l *Lexer) skipWhitespace() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
 		l.readChar()
 	}
 }
 
+/*
+Reads the next character in the input and advances the position
+and readPosition pointers in the input string
+*/
 func (l *Lexer) readChar() {
 	if l.readPosition >= len(l.input) {
 		l.ch = 0
@@ -132,6 +143,10 @@ func (l *Lexer) readChar() {
 	l.readPosition += 1
 }
 
+/*
+Returns the next character in the input without advancing the
+position and readPosition pointers in the input string
+*/
 func (l *Lexer) peekChar() byte {
 	if l.readPosition >= len(l.input) {
 		return 0
@@ -140,6 +155,13 @@ func (l *Lexer) peekChar() byte {
 	}
 }
 
+/*
+Reads the next identifier in the input and advances the
+position and readPosition pointers in the input string to the end of the
+identifier
+
+It returns the identifier as a string
+*/
 func (l *Lexer) readIdentifier() string {
 	position := l.position
 	for isLetter(l.ch) {
@@ -148,20 +170,53 @@ func (l *Lexer) readIdentifier() string {
 	return l.input[position:l.position]
 }
 
-func (l *Lexer) readNumber() (string, bool) {
+/*
+Reads the next number in the input and advances the position and
+readPosition pointers in the input string to the end of the number
+
+It returns the number as a string and its type (INT or FLOAT)
+
+It can return an ILLEGAL token if the number is malformed (e.g. 12.34.56)
+*/
+func (l *Lexer) readNumber() (string, token.TokenType) {
 	position := l.position
 	isFloat := false
+	dotCount := 0
+	illegal := false
 
 	for isDigit(l.ch) || l.ch == '.' {
 		if l.ch == '.' {
+			dotCount++
+			if dotCount > 1 {
+				illegal = true
+				break
+			}
 			isFloat = true
 		}
 		l.readChar()
 	}
 
-	return l.input[position:l.position], isFloat
+	for illegal && !isPossibleTerminator(l.ch) {
+		l.readChar()
+	}
+
+	if illegal {
+		return l.input[position:l.position], token.ILLEGAL
+	}
+
+	if isFloat {
+		return l.input[position:l.position], token.FLOAT
+	} else {
+		return l.input[position:l.position], token.INT
+	}
 }
 
+/*
+Reads the next string in the input and advances the position and
+readPosition pointers in the input string to the end of the string's closing ' " '
+
+It returns the string as a string literal
+*/
 func (l *Lexer) readString() string {
 	position := l.position + 1
 	for {
@@ -173,14 +228,26 @@ func (l *Lexer) readString() string {
 	return l.input[position:l.position]
 }
 
+/* Returns true if the given byte is a letter */
 func isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
 }
 
+/* Returns true if the given byte is a digit */
 func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
 }
 
+/* Returns a new token with the given type and literal */
 func newToken(tokenType token.TokenType, ch byte) token.Token {
 	return token.Token{Type: tokenType, Literal: string(ch)}
+}
+
+/*
+Returns true if the given byte can be a terminator
+
+These are ' ', 0, '\t', '\n', '\r', ';', ')', '}', ']', ','
+*/
+func isPossibleTerminator(ch byte) bool {
+	return ch == ' ' || ch == 0 || ch == '\t' || ch == '\n' || ch == '\r' || ch == ';' || ch == ')' || ch == '}' || ch == ']' || ch == ','
 }

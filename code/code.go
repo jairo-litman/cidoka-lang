@@ -6,8 +6,10 @@ import (
 	"fmt"
 )
 
+// Instructions are a slice of bytes
 type Instructions []byte
 
+// Returns a string representation of the Instructions
 func (ins Instructions) String() string {
 	var out bytes.Buffer
 
@@ -29,6 +31,7 @@ func (ins Instructions) String() string {
 	return out.String()
 }
 
+// Formats the instruction to a string
 func (ins Instructions) fmtInstruction(def *Definition, operands []int) string {
 	operandCount := len(def.OperandWidths)
 
@@ -48,115 +51,155 @@ func (ins Instructions) fmtInstruction(def *Definition, operands []int) string {
 	return fmt.Sprintf("ERROR: unhandled operandCount for %s\n", def.Name)
 }
 
+// Opcode is a byte
 type Opcode byte
 
 const (
-	OpConstant Opcode = iota
-	OpPop
-	OpNull
+	// Special Opcodes
 
-	OpAdd
-	OpSub
-	OpMul
-	OpDiv
+	OpConstant Opcode = iota // Push a constant to the stack
+	OpPop                    // Pop the top of the stack
+	OpNull                   // Push a null value to the stack
 
-	OpTrue
-	OpFalse
+	// Arithmetic Opcodes
 
-	OpEqual
-	OpNotEqual
-	OpGreaterThan
-	OpGreaterOrEqual
-	OpLessThan
-	OpLessOrEqual
+	OpAdd // Pop the top two elements of the stack, add them and push the result to the stack
+	OpSub // Pop the top two elements of the stack, subtract them and push the result to the stack
+	OpMul // Pop the top two elements of the stack, multiply them and push the result to the stack
+	OpDiv // Pop the top two elements of the stack, divide them and push the result to the stack
 
-	OpMinus
-	OpBang
+	// Boolean Opcodes
 
-	OpJumpNotTruthy
-	OpJump
+	OpTrue  // Push a true value to the stack
+	OpFalse // Push a false value to the stack
 
-	OpSetGlobal
-	OpGetGlobal
+	// Comparison Opcodes
 
-	OpSetLocal
-	OpGetLocal
+	OpEqual          // Pop the top two elements of the stack and compare for equality, push the result to the stack
+	OpNotEqual       // Pop the top two elements of the stack and compare for inequality, push the result to the stack
+	OpGreaterThan    // Pop the top two elements of the stack and compare for greater than, push the result to the stack
+	OpGreaterOrEqual // Pop the top two elements of the stack and compare for greater or equal, push the result to the stack
+	OpLessThan       // Pop the top two elements of the stack and compare for less than, push the result to the stack
+	OpLessOrEqual    // Pop the top two elements of the stack and compare for less or equal, push the result to the stack
 
-	OpArray
-	OpHash
-	OpIndex
+	// Prefix Opcodes
 
-	OpCall
-	OpReturnValue
-	OpReturn
+	OpMinus // Pop the top element of the stack, perform arithmetic negation and push the result to the stack
+	OpBang  // Pop the top element of the stack, perform boolean negation and push the result to the stack
 
-	OpGetBuiltin
+	// Jump Opcodes
 
-	OpClosure
-	OpGetFree
+	OpJumpNotTruthy // Pop the top element of the stack and jump to a specific position if it is not truthy
+	OpJump          // Jump to a specific position
 
-	OpCurrentClosure
+	// Variable Opcodes
 
-	OpForLoop
-	OpBreak
+	OpSetGlobal // Pop the top element of the stack and set it to a global scope variable
+	OpGetGlobal // Push a global scope variable to the stack
+	OpSetLocal  // Pop the top element of the stack and set it to a local scope variable
+	OpGetLocal  // Push a local scope variable to the stack
+
+	// Data Structure Opcodes
+
+	OpArray // Push an array to the stack made from the n elements below it
+	OpHash  // Push a hash to the stack made from the n elements below it // n is even
+	OpIndex // Pop the top two elements of the stack, using the first as an index to the second, push the result to the stack
+
+	// Function Opcodes
+
+	OpClosure    // Push a closure to the stack
+	OpGetBuiltin // Push a builtin function to the stack
+	OpCall       // Call top n+1 elements of the stack as a function // n is the number of arguments // last element is the function
+
+	OpCurrentClosure // Push the current closure as a variable // recursion
+	OpGetFree        // Push a variable from the free scope
+
+	OpReturnValue // Return from a function with a value
+	OpReturn      // Return from a function
+
+	// Loop Opcodes
+
+	OpForLoop // Push a for loop onto the stack // pops after the loop
+	OpBreak   // Break out of a loop // pops a loop
 )
 
+// Opcode definitions
 type Definition struct {
-	Name          string
-	OperandWidths []int
+	Name          string // Name of the opcode
+	OperandWidths []int  // Width of the operands
 }
 
+// Mapping of Opcode to its Definition
 var definitions = map[Opcode]*Definition{
-	OpConstant: {"OpConstant", []int{2}},
-	OpPop:      {"OpPop", []int{}},
-	OpNull:     {"OpNull", []int{}},
+	// Special Opcodes
 
-	OpAdd: {"OpAdd", []int{}},
-	OpSub: {"OpSub", []int{}},
-	OpMul: {"OpMul", []int{}},
-	OpDiv: {"OpDiv", []int{}},
+	OpConstant: {"OpConstant", []int{2}}, // Single operand of 2 bytes, 3 bytes in total
+	OpPop:      {"OpPop", []int{}},       // No operands, 1 byte in total
+	OpNull:     {"OpNull", []int{}},      // No operands, 1 byte in total,
 
-	OpTrue:  {"OpTrue", []int{}},
-	OpFalse: {"OpFalse", []int{}},
+	// Arithmetic Opcodes
 
-	OpEqual:          {"OpEqual", []int{}},
-	OpNotEqual:       {"OpNotEqual", []int{}},
-	OpGreaterThan:    {"OpGreaterThan", []int{}},
-	OpGreaterOrEqual: {"OpGreaterOrEqual", []int{}},
-	OpLessThan:       {"OpLessThan", []int{}},
-	OpLessOrEqual:    {"OpLessOrEqual", []int{}},
+	OpAdd: {"OpAdd", []int{}}, // No operands, 1 byte in total
+	OpSub: {"OpSub", []int{}}, // No operands, 1 byte in total
+	OpMul: {"OpMul", []int{}}, // No operands, 1 byte in total
+	OpDiv: {"OpDiv", []int{}}, // No operands, 1 byte in total
 
-	OpMinus: {"OpMinus", []int{}},
-	OpBang:  {"OpBang", []int{}},
+	// Boolean Opcodes
 
-	OpJumpNotTruthy: {"OpJumpNotTruthy", []int{2}},
-	OpJump:          {"OpJump", []int{2}},
+	OpTrue:  {"OpTrue", []int{}},  // No operands, 1 byte in total
+	OpFalse: {"OpFalse", []int{}}, // No operands, 1 byte in total
 
-	OpSetGlobal: {"OpSetGlobal", []int{2}},
-	OpGetGlobal: {"OpGetGlobal", []int{2}},
+	// Comparison Opcodes
 
-	OpSetLocal: {"OpSetLocal", []int{1}},
-	OpGetLocal: {"OpGetLocal", []int{1}},
+	OpEqual:          {"OpEqual", []int{}},          // No operands, 1 byte in total
+	OpNotEqual:       {"OpNotEqual", []int{}},       // No operands, 1 byte in total
+	OpGreaterThan:    {"OpGreaterThan", []int{}},    // No operands, 1 byte in total
+	OpGreaterOrEqual: {"OpGreaterOrEqual", []int{}}, // No operands, 1 byte in total
+	OpLessThan:       {"OpLessThan", []int{}},       // No operands, 1 byte in total
+	OpLessOrEqual:    {"OpLessOrEqual", []int{}},    // No operands, 1 byte in total
 
-	OpArray: {"OpArray", []int{2}},
-	OpHash:  {"OpHash", []int{2}},
-	OpIndex: {"OpIndex", []int{}},
+	// Prefix Opcodes
 
-	OpCall:        {"OpCall", []int{1}},
-	OpReturnValue: {"OpReturnValue", []int{}},
-	OpReturn:      {"OpReturn", []int{}},
+	OpMinus: {"OpMinus", []int{}}, // No operands, 1 byte in total
+	OpBang:  {"OpBang", []int{}},  // No operands, 1 byte in total
 
-	OpGetBuiltin: {"OpGetBuiltin", []int{1}},
+	// Jump Opcodes
 
-	OpClosure: {"OpClosure", []int{2, 1}},
-	OpGetFree: {"OpGetFree", []int{1}},
+	OpJumpNotTruthy: {"OpJumpNotTruthy", []int{2}}, // Single operand of 2 bytes, 3 bytes in total
+	OpJump:          {"OpJump", []int{2}},          // Single operand of 2 bytes, 3 bytes in total
 
-	OpCurrentClosure: {"OpCurrentClosure", []int{}},
+	// Variable Opcodes
 
-	OpForLoop: {"OpForLoop", []int{2}},
-	OpBreak:   {"OpBreak", []int{}},
+	OpSetGlobal: {"OpSetGlobal", []int{2}}, // Single operand of 2 bytes, 3 bytes in total
+	OpGetGlobal: {"OpGetGlobal", []int{2}}, // Single operand of 2 bytes, 3 bytes in total
+	OpSetLocal:  {"OpSetLocal", []int{1}},  // Single operand of 1 byte, 2 bytes in total
+	OpGetLocal:  {"OpGetLocal", []int{1}},  // Single operand of 1 byte, 2 bytes in total
+
+	// Data Structure Opcodes
+
+	OpArray: {"OpArray", []int{2}}, // Single operand of 2 bytes, 3 bytes in total
+	OpHash:  {"OpHash", []int{2}},  // Single operand of 2 bytes, 3 bytes in total
+	OpIndex: {"OpIndex", []int{}},  // No operands, 1 byte in total
+
+	// Function Opcodes
+
+	OpClosure:    {"OpClosure", []int{2, 1}}, // Two operands of 2 and 1 bytes, 4 bytes in total
+	OpGetBuiltin: {"OpGetBuiltin", []int{1}}, // Single operand of 1 byte, 2 bytes in total
+	OpCall:       {"OpCall", []int{1}},       // Single operand of 1 byte, 2 bytes in total
+
+	OpReturnValue: {"OpReturnValue", []int{}}, // No operands, 1 byte in total
+	OpReturn:      {"OpReturn", []int{}},      // No operands, 1 byte in total
+
+	OpCurrentClosure: {"OpCurrentClosure", []int{}}, // No operands, 1 byte in total
+	OpGetFree:        {"OpGetFree", []int{1}},       // Single operand of 1 byte, 2 bytes in total
+
+	// Loop Opcodes
+
+	OpForLoop: {"OpForLoop", []int{2}}, // Single operand of 2 bytes, 3 bytes in total
+	OpBreak:   {"OpBreak", []int{}},    // No operands, 1 byte in total
 }
 
+// Returns the Definition of the opcode
 func Lookup(op byte) (*Definition, error) {
 	def, ok := definitions[Opcode(op)]
 	if !ok {
@@ -165,6 +208,7 @@ func Lookup(op byte) (*Definition, error) {
 	return def, nil
 }
 
+// Returns the byte representation of the opcode and its operands in big-endian order
 func Make(op Opcode, operands ...int) []byte {
 	def, ok := definitions[op]
 	if !ok {
@@ -194,6 +238,7 @@ func Make(op Opcode, operands ...int) []byte {
 	return instruction
 }
 
+// Reads the operands of the opcode
 func ReadOperands(def *Definition, ins Instructions) ([]int, int) {
 	operands := make([]int, len(def.OperandWidths))
 	offset := 0
@@ -212,10 +257,12 @@ func ReadOperands(def *Definition, ins Instructions) ([]int, int) {
 	return operands, offset
 }
 
+// Reads a 16-bit unsigned integer in big-endian order
 func ReadUint16(ins Instructions) uint16 {
 	return binary.BigEndian.Uint16(ins)
 }
 
+// Reads an 8-bit unsigned integer in big-endian order
 func ReadUint8(ins Instructions) uint8 {
 	return uint8(ins[0])
 }
