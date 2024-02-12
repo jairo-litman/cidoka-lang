@@ -80,8 +80,8 @@ type Token struct {
 	Literal string    // Literal value of token
 }
 
-// Map of keywords to their TokenType constants.
-var keywords = map[string]TokenType{
+// Map of Keywords to their TokenType constants.
+var Keywords = map[string]TokenType{
 	"fn":     FUNCTION,
 	"let":    LET,
 	"true":   TRUE,
@@ -99,7 +99,7 @@ Checks the keywords table to see if the given identifier is a keyword.
 If it is, it returns the keyword's TokenType constant. If not, it's an identifier.
 */
 func LookupIdent(ident string) TokenType {
-	if tok, ok := keywords[ident]; ok {
+	if tok, ok := Keywords[ident]; ok {
 		return tok
 	}
 

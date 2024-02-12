@@ -22,13 +22,13 @@ func main() {
 	}
 	historyFile := filepath.Join(homeDir, ".cidoka_lang_history")
 
-	line := liner.NewLiner()
-	defer line.Close()
+	liner := liner.NewLiner()
+	defer liner.Close()
 
-	line.SetCtrlCAborts(true)
+	liner.SetCtrlCAborts(true)
 
 	if f, err := os.Open(historyFile); err == nil {
-		line.ReadHistory(f)
+		liner.ReadHistory(f)
 		f.Close()
 	}
 
@@ -39,12 +39,12 @@ func main() {
 	fmt.Printf("Hello %s! This is the Cidoka programming language!\n", user.Username)
 	fmt.Printf("Running in %s mode\n", *engine)
 	fmt.Printf("Feel free to type in commands\n")
-	repl.Start(os.Stdin, os.Stdout, *engine, line)
+	repl.Start(os.Stdin, os.Stdout, *engine, liner)
 
 	if f, err := os.Create(historyFile); err != nil {
 		fmt.Printf("Error writing history file: %s\n", err)
 	} else {
-		line.WriteHistory(f)
+		liner.WriteHistory(f)
 		f.Close()
 	}
 }
