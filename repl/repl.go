@@ -1,7 +1,6 @@
 package repl
 
 import (
-	"bufio"
 	"cidoka/compiler"
 	"cidoka/evaluator"
 	"cidoka/lexer"
@@ -10,13 +9,13 @@ import (
 	"cidoka/vm"
 	"fmt"
 	"io"
+
+	"github.com/peterh/liner"
 )
 
 const PROMPT = ">> "
 
-func Start(in io.Reader, out io.Writer, engine string) {
-	scanner := bufio.NewScanner(in)
-
+func Start(in io.Reader, out io.Writer, engine string, liner *liner.State) {
 	env := object.NewEnvironment()
 
 	constants := []object.Object{}
@@ -28,14 +27,14 @@ func Start(in io.Reader, out io.Writer, engine string) {
 	}
 
 	for {
-		fmt.Print(PROMPT)
-		scanned := scanner.Scan()
-		if !scanned {
+		scanned, err := liner.Prompt(PROMPT)
+		if err != nil {
 			return
 		}
 
-		line := scanner.Text()
-		lex := lexer.New(line)
+		liner.AppendHistory(scanned)
+
+		lex := lexer.New(scanned)
 		parser := parser.New(lex)
 
 		program := parser.ParseProgram()
