@@ -6,6 +6,7 @@ import (
 	"cidoka/lexer"
 	"cidoka/object"
 	"cidoka/parser"
+	"cidoka/token"
 	"cidoka/vm"
 	"fmt"
 	"io"
@@ -16,15 +17,25 @@ import (
 const PROMPT = ">> "
 
 func Start(in io.Reader, out io.Writer, engine string, liner *liner.State) {
-	env := object.NewEnvironment()
+	var env *object.Environment
+	var constants []object.Object
+	var globals []object.Object
+	var symbolTable *compiler.SymbolTable
 
-	constants := []object.Object{}
-	globals := make([]object.Object, vm.GlobalsSize)
+	if engine == "eval" {
+		env = object.NewEnvironment()
+	} else if engine == "vm" {
+		constants = []object.Object{}
+		globals = make([]object.Object, vm.GlobalsSize)
 
-	symbolTable := compiler.NewSymbolTable()
-	for i, v := range object.Builtins {
-		symbolTable.DefineBuiltin(i, v.Name)
+		symbolTable = compiler.NewSymbolTable()
+
+		for i, v := range object.Builtins {
+			symbolTable.DefineBuiltin(i, v.Name)
+		}
 	}
+
+	liner.SetCompleter(completer)
 
 	for {
 		scanned, err := liner.Prompt(PROMPT)
@@ -78,4 +89,20 @@ func printParserErrors(out io.Writer, errors []string) {
 	for _, msg := range errors {
 		io.WriteString(out, "\t"+msg+"\n")
 	}
+}
+
+func completer(line string) (c []string) {
+	for _, builtin := range object.Builtins {
+		if len(line) < len(builtin.Name) && builtin.Name[:len(line)] == line {
+			c = append(c, builtin.Name)
+		}
+	}
+
+	for keyword := range token.Keywords {
+		if len(line) < len(keyword) && keyword[:len(line)] == line {
+			c = append(c, keyword)
+		}
+	}
+
+	return
 }
