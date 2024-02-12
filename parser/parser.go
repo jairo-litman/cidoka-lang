@@ -504,15 +504,20 @@ func (parser *Parser) parseIfExpression() ast.Expression {
 
 	expression.Consequence = parser.parseBlockStatement()
 
-	// TODO: Add support for else if statements
 	if parser.peekTokenIs(token.ELSE) {
 		parser.nextToken()
 
-		if !parser.expectPeek(token.LBRACE) {
-			return nil
-		}
+		if parser.peekTokenIs(token.IF) {
+			parser.nextToken()
 
-		expression.Alternative = parser.parseBlockStatement()
+			expression.Alternative = parser.parseExpressionStatement()
+		} else {
+			if !parser.expectPeek(token.LBRACE) {
+				return nil
+			}
+
+			expression.Alternative = parser.parseBlockStatement()
+		}
 	}
 
 	return expression

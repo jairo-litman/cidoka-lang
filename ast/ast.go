@@ -306,7 +306,7 @@ type IfExpression struct {
 	Token       token.Token     // token.IF
 	Condition   Expression      // expression that evaluates to the condition of the if statement
 	Consequence *BlockStatement // block statement that makes up the body of the if statement
-	Alternative *BlockStatement // block statement that makes up the body of the else statement // or nil
+	Alternative Statement       // statement that makes up the body of the else statement // or nil
 }
 
 func (ifExpr *IfExpression) expressionNode()      {}
