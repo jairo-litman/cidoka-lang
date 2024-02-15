@@ -70,11 +70,6 @@ func (vm *VM) Run() error {
 		ins = vm.currentFrame().Instructions()
 		op = code.Opcode(ins[ip])
 
-		// for i, v := range vm.stack[:vm.sp] {
-		// 	fmt.Printf("%d    %d: %T %s\n", ip, i, v, v.Inspect())
-		// }
-		// fmt.Printf("\n")
-
 		switch op {
 		case code.OpConstant:
 			constIndex := code.ReadUint16(ins[ip+1:])
