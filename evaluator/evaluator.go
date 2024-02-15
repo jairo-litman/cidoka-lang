@@ -31,7 +31,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	// Statements
 	case *ast.LetStatement:
 		_, ok := env.GetNoRecursion(node.Name.Value)
-		if ok {
+		if ok && !env.IsLoop() {
 			return newError("identifier already declared: " + node.Name.Value)
 		}
 
@@ -77,6 +77,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.ForLoopStatement:
 		// Create a new environment for the for loop
 		forEnv := object.NewEnclosedEnvironment(env)
+		forEnv.SetLoop(true)
 
 		// Evaluate the init expression
 		if node.Initializer != nil {

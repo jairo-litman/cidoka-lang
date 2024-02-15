@@ -126,9 +126,12 @@ func (c *Compiler) Compile(node ast.Node) error {
 			c.emit(code.OpMod)
 		}
 
-		if symbol.Scope == GlobalScope {
+		switch scope := symbol.Scope; scope {
+		case GlobalScope:
 			c.emit(code.OpSetGlobal, symbol.Index)
-		} else {
+		case FreeScope:
+			c.emit(code.OpSetFree, symbol.Index)
+		default:
 			c.emit(code.OpSetLocal, symbol.Index)
 		}
 
@@ -201,12 +204,19 @@ func (c *Compiler) Compile(node ast.Node) error {
 
 		c.emit(code.OpBreak)
 
+		freeSymbols := c.symbolTable.FreeSymbols
 		numLoc := c.symbolTable.numDefinitions
 		ins := c.leaveScope()
+
+		free := make([]int, len(freeSymbols))
+		for i, s := range freeSymbols {
+			free[i] = s.Index
+		}
 
 		compiled := &object.CompiledFor{
 			Instructions: ins,
 			NumLocals:    numLoc,
+			Free:         free,
 		}
 
 		idx := c.addConstant(compiled)

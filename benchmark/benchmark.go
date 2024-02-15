@@ -13,8 +13,9 @@ import (
 )
 
 var engine = flag.String("engine", "vm", "use 'vm' or 'eval'")
+var input = flag.String("input", "recursive", "recursive or iterative benchmark")
 
-var input = `
+var recursive = `
 let fibonacci = fn(x) {
 	if (x == 0) {
 		0
@@ -29,13 +30,31 @@ let fibonacci = fn(x) {
 fibonacci(35);
 `
 
+var iterative = `
+let fibonacci = fn(x) {
+	let sequence = [0, 1];
+	for (let i = 2; i <= x; i += 1) {
+		sequence = push(sequence, sequence[i - 1] + sequence[i - 2]);
+	}
+	return sequence[x];
+};
+fibonacci(35);
+`
+
 func main() {
 	flag.Parse()
 
 	var duration time.Duration
 	var result object.Object
+	var benchmark string
 
-	l := lexer.New(input)
+	if *input == "recursive" {
+		benchmark = recursive
+	} else {
+		benchmark = iterative
+	}
+
+	l := lexer.New(benchmark)
 	p := parser.New(l)
 	program := p.ParseProgram()
 

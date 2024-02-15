@@ -664,6 +664,22 @@ func TestEvalEmptyForLoop(t *testing.T) {
 	testIntegerObject(t, testEval(input), 5)
 }
 
+func TestEvalDoubleForLoop(t *testing.T) {
+	input := `
+	let x = 0;
+	for (let i = 0; i < 10; i += 1) {
+		let sum = 0;
+		for (let j = 0; j < 10; j += 1) {
+			sum = sum + j;
+		}
+		x = sum;
+	}
+	x;
+	`
+
+	testIntegerObject(t, testEval(input), 45)
+}
+
 func TestEvalCompoundAssignment(t *testing.T) {
 	input := `
 	let x = 10;
@@ -680,4 +696,38 @@ func TestEvalModulo(t *testing.T) {
 	`
 
 	testIntegerObject(t, testEval(input), 2)
+}
+
+func TestRecursiveFibonacci(t *testing.T) {
+	input := `
+	let fibonacci = fn(x) {
+		if (x == 0) {
+			return 0;
+		} else {
+			if (x == 1) {
+				return 1;
+			} else {
+				fibonacci(x - 1) + fibonacci(x - 2);
+			}
+		}
+	};
+	fibonacci(15);
+	`
+
+	testIntegerObject(t, testEval(input), 610)
+}
+
+func TestIterativeFibonacci(t *testing.T) {
+	input := `
+	let fibonacci = fn(x) {
+		let sequence = [0, 1];
+		for (let i = 2; i <= x; i += 1) {
+			sequence = push(sequence, sequence[i - 1] + sequence[i - 2]);
+		}
+		return sequence[x];
+	};
+	fibonacci(15);
+	`
+
+	testIntegerObject(t, testEval(input), 610)
 }

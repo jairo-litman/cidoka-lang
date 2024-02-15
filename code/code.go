@@ -113,6 +113,7 @@ const (
 	OpCall       // Call top n+1 elements of the stack as a function // n is the number of arguments // last element is the function
 
 	OpCurrentClosure // Push the current closure as a variable // recursion
+	OpSetFree        // Pop the top element of the stack and set it to a free scope variable
 	OpGetFree        // Push a variable from the free scope
 
 	OpReturnValue // Return from a function with a value
@@ -193,6 +194,7 @@ var definitions = map[Opcode]*Definition{
 	OpReturn:      {"OpReturn", []int{}},      // No operands, 1 byte in total
 
 	OpCurrentClosure: {"OpCurrentClosure", []int{}}, // No operands, 1 byte in total
+	OpSetFree:        {"OpSetFree", []int{1}},       // Single operand of 1 byte, 2 bytes in total
 	OpGetFree:        {"OpGetFree", []int{1}},       // Single operand of 1 byte, 2 bytes in total
 
 	// Loop Opcodes

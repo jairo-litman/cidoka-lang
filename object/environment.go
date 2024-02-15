@@ -3,6 +3,7 @@ package object
 type Environment struct {
 	store map[string]Object
 	outer *Environment
+	loop  bool
 }
 
 func NewEnvironment() *Environment {
@@ -35,7 +36,10 @@ func (e *Environment) Set(name string, val Object) Object {
 	return val
 }
 
-func SetInEnv(name string, val Object, env *Environment) Object {
-	env.store[name] = val
-	return val
+func (e *Environment) IsLoop() bool {
+	return e.loop
+}
+
+func (e *Environment) SetLoop(loop bool) {
+	e.loop = loop
 }

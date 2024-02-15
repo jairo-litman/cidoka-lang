@@ -11,9 +11,10 @@ const (
 )
 
 type Symbol struct {
-	Name  string
-	Scope SymbolScope
-	Index int
+	Name       string
+	Scope      SymbolScope
+	Index      int
+	StackIndex int
 }
 
 type SymbolTable struct {

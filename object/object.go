@@ -219,6 +219,7 @@ func (c *Closure) Inspect() string {
 type CompiledFor struct {
 	Instructions code.Instructions
 	NumLocals    int
+	Free         []int
 }
 
 func (cf *CompiledFor) Type() ObjectType { return COMPILED_FOR_OBJ }

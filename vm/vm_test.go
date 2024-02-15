@@ -635,6 +635,26 @@ func TestRecursiveFibonacci(t *testing.T) {
 	runVmTests(t, tests)
 }
 
+func TestIterativeFibonacci(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input: `
+			let fibonacci = fn(x) {
+				let sequence = [0, 1];
+				for (let i = 2; i <= x; i += 1) {
+					sequence = push(sequence, sequence[i - 1] + sequence[i - 2]);
+				}
+				return sequence[x];
+			};
+			fibonacci(15);
+			`,
+			expected: 610,
+		},
+	}
+
+	runVmTests(t, tests)
+}
+
 func TestFloatingPointNumbers(t *testing.T) {
 	tests := []vmTestCase{
 		{"3.14", 3.14},
@@ -684,6 +704,20 @@ func TestForLoop(t *testing.T) {
 			i;
 			`,
 			expected: 5,
+		},
+		{
+			input: `
+			let x = 0;
+			for (let i = 0; i < 10; i += 1) {
+				let sum = 0;
+				for (let j = 0; j < 10; j += 1) {
+					sum = sum + j;
+				}
+				x = sum;
+			}
+			x;
+			`,
+			expected: 45,
 		},
 	}
 
