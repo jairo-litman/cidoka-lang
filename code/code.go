@@ -67,6 +67,7 @@ const (
 	OpSub // Pop the top two elements of the stack, subtract them and push the result to the stack
 	OpMul // Pop the top two elements of the stack, multiply them and push the result to the stack
 	OpDiv // Pop the top two elements of the stack, divide them and push the result to the stack
+	OpMod // Pop the top two elements of the stack, modulo them and push the result to the stack
 
 	// Boolean Opcodes
 
@@ -143,6 +144,7 @@ var definitions = map[Opcode]*Definition{
 	OpSub: {"OpSub", []int{}}, // No operands, 1 byte in total
 	OpMul: {"OpMul", []int{}}, // No operands, 1 byte in total
 	OpDiv: {"OpDiv", []int{}}, // No operands, 1 byte in total
+	OpMod: {"OpMod", []int{}}, // No operands, 1 byte in total
 
 	// Boolean Opcodes
 

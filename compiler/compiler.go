@@ -4,6 +4,7 @@ import (
 	"cidoka/ast"
 	"cidoka/code"
 	"cidoka/object"
+	"cidoka/token"
 	"fmt"
 	"sort"
 )
@@ -103,9 +104,26 @@ func (c *Compiler) Compile(node ast.Node) error {
 			return fmt.Errorf("undeclared variable %s", node.Name.Value)
 		}
 
+		if node.Token.Type != token.ASSIGN {
+			c.loadSymbol(symbol)
+		}
+
 		err := c.Compile(node.Value)
 		if err != nil {
 			return err
+		}
+
+		switch node.Token.Type {
+		case token.PLUS_EQ:
+			c.emit(code.OpAdd)
+		case token.MINUS_EQ:
+			c.emit(code.OpSub)
+		case token.ASTERISK_EQ:
+			c.emit(code.OpMul)
+		case token.SLASH_EQ:
+			c.emit(code.OpDiv)
+		case token.MODULO_EQ:
+			c.emit(code.OpMod)
 		}
 
 		if symbol.Scope == GlobalScope {
@@ -261,6 +279,8 @@ func (c *Compiler) Compile(node ast.Node) error {
 			c.emit(code.OpMul)
 		case "/":
 			c.emit(code.OpDiv)
+		case "%":
+			c.emit(code.OpMod)
 		case "==":
 			c.emit(code.OpEqual)
 		case "!=":

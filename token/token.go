@@ -18,11 +18,11 @@ const (
 	// Assignment operators
 
 	ASSIGN      TokenType = "="  // assignment
-	PLUS_EQ     TokenType = "+=" // todo
-	MINUS_EQ    TokenType = "-=" // todo
-	ASTERISK_EQ TokenType = "*=" // todo
-	SLASH_EQ    TokenType = "/=" // todo
-	MODULO_EQ   TokenType = "%=" // todo
+	PLUS_EQ     TokenType = "+=" // addition assignment
+	MINUS_EQ    TokenType = "-=" // subtraction assignment
+	ASTERISK_EQ TokenType = "*=" // multiplication assignment
+	SLASH_EQ    TokenType = "/=" // division assignment
+	MODULO_EQ   TokenType = "%=" // modulo assignment
 
 	// Arithmetic operators
 
@@ -30,7 +30,7 @@ const (
 	MINUS    TokenType = "-" // subtraction
 	ASTERISK TokenType = "*" // multiplication
 	SLASH    TokenType = "/" // division
-	MODULO   TokenType = "%" // todo
+	MODULO   TokenType = "%" // modulo
 
 	// Comparison operators
 
@@ -74,6 +74,16 @@ const (
 	FOR      TokenType = "FOR"      // for loop
 	BREAK    TokenType = "BREAK"    // break statement
 )
+
+// Map of AssignmentOperators to their TokenType constants.
+var AssignmentOperators = map[TokenType]bool{
+	ASSIGN:      true,
+	PLUS_EQ:     true,
+	MINUS_EQ:    true,
+	ASTERISK_EQ: true,
+	SLASH_EQ:    true,
+	MODULO_EQ:   true,
+}
 
 type Token struct {
 	Type    TokenType // Type of token

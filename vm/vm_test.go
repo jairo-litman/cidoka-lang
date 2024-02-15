@@ -689,3 +689,17 @@ func TestForLoop(t *testing.T) {
 
 	runVmTests(t, tests)
 }
+
+func TestCompoundAssignment(t *testing.T) {
+	tests := []vmTestCase{
+		{"let a = 1; a += 2; a", 3},
+		{"let a = 1; a -= 2; a", -1},
+		{"let a = 1; a *= 2; a", 2},
+		{"let a = 4; a /= 2; a", 2},
+		{"let a = 5; a %= 2; a", 1},
+		{"let a = 1; a += 2 * 3; a", 7},
+		{"let a = 2; a *= 5 + 2; a", 14},
+	}
+
+	runVmTests(t, tests)
+}

@@ -1181,3 +1181,31 @@ func TestEmptyForLoop(t *testing.T) {
 		t.Fatalf("bodyStmt.TokenLiteral not %s. got=%s", "break", bodyStmt.TokenLiteral())
 	}
 }
+
+func TestCompoundAssignmentOperators(t *testing.T) {
+	tests := []struct {
+		input    string
+		operator string
+	}{
+		{"x += 5;", "+="},
+		{"x -= 5;", "-="},
+		{"x *= 5;", "*="},
+		{"x /= 5;", "/="},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		assignStmt, ok := program.Statements[0].(*ast.AssignStatement)
+		if !ok {
+			t.Fatalf("stmt not *ast.AssignStatement. got=%T", program.Statements[0])
+		}
+
+		if assignStmt.TokenLiteral() != tt.operator {
+			t.Fatalf("assignStmt.Operator not %s. got=%s", tt.operator, assignStmt.TokenLiteral())
+		}
+	}
+}

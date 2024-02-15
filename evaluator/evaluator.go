@@ -51,7 +51,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return &object.ReturnValue{Value: val}
 
 	case *ast.AssignStatement:
-		_, identEnv, ok := env.Get(node.Name.Value)
+		oldVal, identEnv, ok := env.Get(node.Name.Value)
 		if !ok {
 			return newError("identifier not declared: " + node.Name.Value)
 		}
@@ -61,7 +61,12 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return val
 		}
 
-		identEnv.Set(node.Name.Value, val)
+		newVal := handleAssignValue(oldVal, val, node.TokenLiteral())
+		if isError(newVal) {
+			return newVal
+		}
+
+		identEnv.Set(node.Name.Value, newVal)
 
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression, env)
@@ -317,6 +322,8 @@ func evalIntegerInfixExpression(operator string, left, right object.Object) obje
 		return &object.Integer{Value: leftVal * rightVal}
 	case "/":
 		return &object.Integer{Value: leftVal / rightVal}
+	case "%":
+		return &object.Integer{Value: leftVal % rightVal}
 	case "==":
 		return nativeBoolToBooleanObject(leftVal == rightVal)
 	case "!=":
@@ -538,4 +545,23 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 	}
 
 	return pair.Value
+}
+
+func handleAssignValue(oldVal object.Object, val object.Object, token string) object.Object {
+	newVal := val
+
+	switch token {
+	case "+=":
+		newVal = evalInfixExpression("+", oldVal, val)
+	case "-=":
+		newVal = evalInfixExpression("-", oldVal, val)
+	case "*=":
+		newVal = evalInfixExpression("*", oldVal, val)
+	case "/=":
+		newVal = evalInfixExpression("/", oldVal, val)
+	case "%=":
+		newVal = evalInfixExpression("%", oldVal, val)
+	}
+
+	return newVal
 }

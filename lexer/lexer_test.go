@@ -65,22 +65,28 @@ func TestNextToken(t *testing.T) {
 			},
 		},
 		{
-			input: `!-+/*;
-			< <= > >= == !=;`,
+			input: `!-+/*
+			< <= > >= == !=
+			+= -= *= /=
+			% %=`,
 			expected: []ExpectedToken{
 				{token.BANG, "!"},
 				{token.MINUS, "-"},
 				{token.PLUS, "+"},
 				{token.SLASH, "/"},
 				{token.ASTERISK, "*"},
-				{token.SEMICOLON, ";"},
 				{token.LT, "<"},
 				{token.LT_EQ, "<="},
 				{token.GT, ">"},
 				{token.GT_EQ, ">="},
 				{token.EQ, "=="},
 				{token.NOT_EQ, "!="},
-				{token.SEMICOLON, ";"},
+				{token.PLUS_EQ, "+="},
+				{token.MINUS_EQ, "-="},
+				{token.ASTERISK_EQ, "*="},
+				{token.SLASH_EQ, "/="},
+				{token.MODULO, "%"},
+				{token.MODULO_EQ, "%="},
 				{token.EOF, ""},
 			},
 		},

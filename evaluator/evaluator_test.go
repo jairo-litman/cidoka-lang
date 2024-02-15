@@ -663,3 +663,21 @@ func TestEvalEmptyForLoop(t *testing.T) {
 
 	testIntegerObject(t, testEval(input), 5)
 }
+
+func TestEvalCompoundAssignment(t *testing.T) {
+	input := `
+	let x = 10;
+	x += 2 * 3;
+	x;
+	`
+
+	testIntegerObject(t, testEval(input), 16)
+}
+
+func TestEvalModulo(t *testing.T) {
+	input := `
+	5 % 3;
+	`
+
+	testIntegerObject(t, testEval(input), 2)
+}

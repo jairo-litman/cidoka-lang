@@ -14,7 +14,7 @@ const (
 	EQUALS      // == or !=
 	LESSGREATER // <, >, <=, or >=
 	SUM         // + or -
-	PRODUCT     // * or /
+	PRODUCT     // *, / or %
 	PREFIX      // -X or !X
 	CALL        // myFunction(X)
 	INDEX       // array[index]
@@ -38,6 +38,7 @@ var precedences = map[token.TokenType]int{
 	token.MINUS:    SUM,
 	token.SLASH:    PRODUCT,
 	token.ASTERISK: PRODUCT,
+	token.MODULO:   PRODUCT,
 	token.LPAREN:   CALL,
 	token.LBRACKET: INDEX,
 }
@@ -94,6 +95,7 @@ func New(lex *lexer.Lexer) *Parser {
 	parser.registerInfix(token.MINUS, parser.parseInfixExpression)
 	parser.registerInfix(token.SLASH, parser.parseInfixExpression)
 	parser.registerInfix(token.ASTERISK, parser.parseInfixExpression)
+	parser.registerInfix(token.MODULO, parser.parseInfixExpression)
 
 	parser.registerInfix(token.EQ, parser.parseInfixExpression)
 	parser.registerInfix(token.NOT_EQ, parser.parseInfixExpression)
@@ -215,7 +217,7 @@ func (parser *Parser) parseStatement() ast.Statement {
 	case token.BREAK:
 		return parser.parseBreakStatement()
 	case token.IDENT:
-		if parser.peekTokenIs(token.ASSIGN) { // check if it's an assign statement
+		if token.AssignmentOperators[parser.peekToken.Type] {
 			return parser.parseAssignStatement()
 		}
 		fallthrough // if it's not an assign statement, parse it as an expression statement

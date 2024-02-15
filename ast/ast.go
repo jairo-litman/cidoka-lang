@@ -78,7 +78,7 @@ func (letStmt *LetStatement) String() string {
 
 // An assign statement, e.g. x = 5;
 type AssignStatement struct {
-	Token token.Token // token.ASSIGN
+	Token token.Token // one of the assignment operator tokens
 	Name  *Identifier // name of the variable
 	Value Expression  // expression that evaluates to the value of the variable
 }

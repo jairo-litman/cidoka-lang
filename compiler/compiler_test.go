@@ -1435,3 +1435,102 @@ func TestForLoops(t *testing.T) {
 
 	runCompilerTests(t, tests)
 }
+
+func TestCompoundAssignment(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input: `
+			let a = 1;
+			a += 2;
+			`,
+			expectedConstants: []interface{}{1, 2},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpAdd),
+				code.Make(code.OpSetGlobal, 0),
+			},
+		},
+		{
+			input: `
+			let a = 1;
+			a -= 2;
+			`,
+			expectedConstants: []interface{}{1, 2},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpSub),
+				code.Make(code.OpSetGlobal, 0),
+			},
+		},
+		{
+			input: `
+			let a = 1;
+			a *= 2;
+			`,
+			expectedConstants: []interface{}{1, 2},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpMul),
+				code.Make(code.OpSetGlobal, 0),
+			},
+		},
+		{
+			input: `
+			let a = 1;
+			a /= 2;
+			`,
+			expectedConstants: []interface{}{1, 2},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpDiv),
+				code.Make(code.OpSetGlobal, 0),
+			},
+		},
+		{
+			input: `
+			let a = 1;
+			a %= 2;
+			`,
+			expectedConstants: []interface{}{1, 2},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpMod),
+				code.Make(code.OpSetGlobal, 0),
+			},
+		},
+		{
+			input: `
+			let a = 1;
+			a += 2 * 3;
+			`,
+			expectedConstants: []interface{}{1, 2, 3},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpConstant, 2),
+				code.Make(code.OpMul),
+				code.Make(code.OpAdd),
+				code.Make(code.OpSetGlobal, 0),
+			},
+		},
+	}
+
+	runCompilerTests(t, tests)
+}
