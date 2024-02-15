@@ -121,8 +121,8 @@ const (
 
 	// Loop Opcodes
 
-	OpForLoop // Push a for loop onto the stack // pops after the loop
-	OpBreak   // Break out of a loop // pops a loop
+	OpLoop  // Push a loop onto the stack // pops after the loop
+	OpBreak // Break out of a loop // pops a loop
 )
 
 // Opcode definitions
@@ -199,8 +199,8 @@ var definitions = map[Opcode]*Definition{
 
 	// Loop Opcodes
 
-	OpForLoop: {"OpForLoop", []int{2}}, // Single operand of 2 bytes, 3 bytes in total
-	OpBreak:   {"OpBreak", []int{}},    // No operands, 1 byte in total
+	OpLoop:  {"OpLoop", []int{2}}, // Single operand of 2 bytes, 3 bytes in total
+	OpBreak: {"OpBreak", []int{}}, // No operands, 1 byte in total
 }
 
 // Returns the Definition of the opcode

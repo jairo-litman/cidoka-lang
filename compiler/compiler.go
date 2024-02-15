@@ -9,6 +9,10 @@ import (
 	"sort"
 )
 
+var (
+	loopContinuePos = []int{}
+)
+
 type Bytecode struct {
 	Instructions code.Instructions
 	Constants    []object.Object
@@ -150,8 +154,10 @@ func (c *Compiler) Compile(node ast.Node) error {
 			}
 		}
 
-	case *ast.ForLoopStatement:
+	case *ast.LoopStatement:
 		c.enterScope()
+
+		currentContinueCount := len(loopContinuePos)
 
 		if node.Initializer != nil {
 			err := c.Compile(node.Initializer)
@@ -182,6 +188,11 @@ func (c *Compiler) Compile(node ast.Node) error {
 			return err
 		}
 
+		// Update any Continue statements with the correct value
+		for _, pos := range loopContinuePos[currentContinueCount:] {
+			c.changeOperand(pos, len(c.currentInstructions()))
+		}
+
 		if node.Update != nil {
 			err = c.Compile(node.Update)
 			if err != nil {
@@ -196,8 +207,8 @@ func (c *Compiler) Compile(node ast.Node) error {
 		jumpPos := c.emit(code.OpJump, 9999)
 
 		// Update the `OpJumpNotTruthy` with the correct value
-		afterBodyPos := len(c.currentInstructions())
-		c.changeOperand(jumptNotTruthyPos, afterBodyPos)
+		afterUpdatePos := len(c.currentInstructions())
+		c.changeOperand(jumptNotTruthyPos, afterUpdatePos)
 
 		// Update the `OpJump` with the correct value
 		c.changeOperand(jumpPos, conditionPos)
@@ -213,18 +224,23 @@ func (c *Compiler) Compile(node ast.Node) error {
 			free[i] = s.Index
 		}
 
-		compiled := &object.CompiledFor{
+		compiled := &object.CompiledLoop{
 			Instructions: ins,
 			NumLocals:    numLoc,
 			Free:         free,
 		}
 
+		loopContinuePos = loopContinuePos[:currentContinueCount]
+
 		idx := c.addConstant(compiled)
 
-		c.emit(code.OpForLoop, idx)
+		c.emit(code.OpLoop, idx)
 
 	case *ast.BreakStatement:
 		c.emit(code.OpBreak)
+
+	case *ast.ContinueStatement:
+		loopContinuePos = append(loopContinuePos, c.emit(code.OpJump, 9999))
 
 	// Expressions
 	case *ast.Identifier:

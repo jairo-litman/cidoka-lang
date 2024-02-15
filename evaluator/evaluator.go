@@ -7,10 +7,11 @@ import (
 )
 
 var (
-	NULL  = &object.Null{}
-	TRUE  = &object.Boolean{Value: true}
-	FALSE = &object.Boolean{Value: false}
-	BREAK = &object.Break{}
+	NULL     = &object.Null{}
+	TRUE     = &object.Boolean{Value: true}
+	FALSE    = &object.Boolean{Value: false}
+	BREAK    = &object.Break{}
+	CONTINUE = &object.Continue{}
 )
 
 var builtins = map[string]*object.Builtin{
@@ -74,21 +75,19 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.BlockStatement:
 		return evalBlockStatement(node, env)
 
-	case *ast.ForLoopStatement:
-		// Create a new environment for the for loop
-		forEnv := object.NewEnclosedEnvironment(env)
-		forEnv.SetLoop(true)
+	case *ast.LoopStatement:
+		// Create a new environment for the loop
+		loopEnv := object.NewEnclosedEnvironment(env)
+		loopEnv.SetLoop(true)
 
 		// Evaluate the init expression
-		if node.Initializer != nil {
-			init := Eval(node.Initializer, forEnv)
-			if isError(init) {
-				return init
-			}
+		init := Eval(node.Initializer, loopEnv)
+		if isError(init) {
+			return init
 		}
 
 		// Evaluate the condition expression
-		condition := Eval(node.Condition, forEnv)
+		condition := Eval(node.Condition, loopEnv)
 		if isError(condition) {
 			return condition
 		}
@@ -96,7 +95,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		// Loop until the condition is false
 		for isTruthy(condition) {
 			// Evaluate the body
-			body := Eval(node.Body, forEnv)
+			body := Eval(node.Body, loopEnv)
 			if isError(body) {
 				return body
 			}
@@ -106,13 +105,13 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			}
 
 			// Evaluate the update expression
-			update := Eval(node.Update, forEnv)
+			update := Eval(node.Update, loopEnv)
 			if isError(update) {
 				return update
 			}
 
 			// Re-evaluate the condition
-			condition = Eval(node.Condition, forEnv)
+			condition = Eval(node.Condition, loopEnv)
 			if isError(condition) {
 				return condition
 			}
@@ -120,6 +119,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 	case *ast.BreakStatement:
 		return BREAK
+
+	case *ast.ContinueStatement:
+		return CONTINUE
 
 	// Expressions
 	case *ast.Identifier:
@@ -237,7 +239,7 @@ func evalBlockStatement(block *ast.BlockStatement, env *object.Environment) obje
 				return result
 			}
 
-			if rt == object.BREAK_OBJ {
+			if rt == object.BREAK_OBJ || rt == object.CONTINUE_OBJ {
 				break
 			}
 		}

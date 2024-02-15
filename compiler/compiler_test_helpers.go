@@ -98,12 +98,12 @@ func testConstants(t *testing.T, expected []interface{}, actual []object.Object)
 					return fmt.Errorf("constant %d - not a function: %T", i, actual[i])
 				}
 				compiledInstructions = fn.Instructions
-			case *object.CompiledFor:
-				fl, ok := actual[i].(*object.CompiledFor)
+			case *object.CompiledLoop:
+				l, ok := actual[i].(*object.CompiledLoop)
 				if !ok {
-					return fmt.Errorf("constant %d - not a for loop: %T", i, actual[i])
+					return fmt.Errorf("constant %d - not a loop: %T", i, actual[i])
 				}
-				compiledInstructions = fl.Instructions
+				compiledInstructions = l.Instructions
 			default:
 				return fmt.Errorf("constant %d - not a function or loop: %T", i, actual[i])
 			}

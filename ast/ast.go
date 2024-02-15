@@ -155,42 +155,42 @@ func (blockStmt *BlockStatement) String() string {
 	return out.String()
 }
 
-// A for loop statement, e.g. for (let i = 0; i < 10; i = i + 1) { ... }
-type ForLoopStatement struct {
-	Token       token.Token     // token.FOR
+// A loop statement, e.g. for (let i = 0; i < 10; i = i + 1) { ... } or while (i < 10) { ... }
+type LoopStatement struct {
+	Token       token.Token     // token.FOR or token.WHILE
 	Initializer Statement       // statement that initializes the loop e.g. let i = 0 // or nil
 	Condition   Expression      // expression that evaluates to the condition of the loop e.g. i < 10 // or nil
 	Update      Statement       // statement that updates the loop e.g. i = i + 1 // or nil
 	Body        *BlockStatement // block statement that makes up the body of the loop
 }
 
-func (forLoop *ForLoopStatement) statementNode()       {}
-func (forLoop *ForLoopStatement) TokenLiteral() string { return forLoop.Token.Literal }
-func (forLoop *ForLoopStatement) String() string {
+func (loop *LoopStatement) statementNode()       {}
+func (loop *LoopStatement) TokenLiteral() string { return loop.Token.Literal }
+func (loop *LoopStatement) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("for")
 	out.WriteString(" (")
 
-	if forLoop.Initializer != nil {
-		out.WriteString(forLoop.Initializer.String())
+	if loop.Initializer != nil {
+		out.WriteString(loop.Initializer.String())
 		out.WriteString(" ")
 	} else {
 		out.WriteString("; ")
 	}
 
-	if forLoop.Condition != nil {
-		out.WriteString(forLoop.Condition.String())
+	if loop.Condition != nil {
+		out.WriteString(loop.Condition.String())
 	}
 	out.WriteString("; ")
 
-	if forLoop.Update != nil {
-		out.WriteString(forLoop.Update.String())
+	if loop.Update != nil {
+		out.WriteString(loop.Update.String())
 	}
 	out.WriteString(") ")
 
 	out.WriteString("{ ")
-	out.WriteString(forLoop.Body.String())
+	out.WriteString(loop.Body.String())
 	out.WriteString(" }")
 
 	return out.String()
@@ -204,6 +204,15 @@ type BreakStatement struct {
 func (breakStmt *BreakStatement) statementNode()       {}
 func (breakStmt *BreakStatement) TokenLiteral() string { return breakStmt.Token.Literal }
 func (breakStmt *BreakStatement) String() string       { return breakStmt.TokenLiteral() }
+
+// A continue statement, e.g. continue;
+type ContinueStatement struct {
+	Token token.Token // token.CONTINUE
+}
+
+func (continueStmt *ContinueStatement) statementNode()       {}
+func (continueStmt *ContinueStatement) TokenLiteral() string { return continueStmt.Token.Literal }
+func (continueStmt *ContinueStatement) String() string       { return continueStmt.TokenLiteral() }
 
 // ----------------------------------------------------------------------------
 // 								Expressions

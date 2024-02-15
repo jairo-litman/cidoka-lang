@@ -737,3 +737,95 @@ func TestCompoundAssignment(t *testing.T) {
 
 	runVmTests(t, tests)
 }
+
+func TestWhileLoop(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input: `
+			let sum = 0;
+			let i = 0;
+			while (i < 10) {
+				sum += i;
+				i += 1;
+			}
+			sum;
+			`,
+			expected: 45,
+		},
+		{
+			input: `
+			let sum = 0;
+			let i = 0;
+			while (i < 10) {
+				if (i == 5) {
+					break;
+				}
+				sum += i;
+				i += 1;
+			}
+			sum;
+			`,
+			expected: 10,
+		},
+	}
+
+	runVmTests(t, tests)
+}
+
+func TestContinue(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input: `
+			let sum = 0;
+			for (let i = 0; i < 10; i += 1) {
+				if (i == 5) {
+					continue;
+				}
+				sum += i;
+			}
+			sum;
+			`,
+			expected: 40,
+		},
+		{
+			input: `
+			let sum = 0;
+			let i = 0;
+			while (i < 10) {
+				for (let j = 0; j < 10; j += 1) {
+					if (j == 5) {
+						continue;
+					}
+					sum += j;
+				}
+				i += 1;
+			}
+			sum;
+			`,
+			expected: 400,
+		},
+		{
+			input: `
+			let sum = 0;
+			let i = 0;
+			while (i < 10) {
+				if (i == 5) {
+					i += 1;
+					continue;
+				}
+				for (let j = 0; j < 10; j += 1) {
+					if (j == 5) {
+						continue;
+					}
+					sum += j;
+				}
+				i += 1;
+			}
+			sum;
+			`,
+			expected: 360,
+		},
+	}
+
+	runVmTests(t, tests)
+}

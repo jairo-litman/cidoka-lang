@@ -72,7 +72,9 @@ const (
 	ELSE     TokenType = "ELSE"     // else statement
 	RETURN   TokenType = "RETURN"   // return statement
 	FOR      TokenType = "FOR"      // for loop
+	WHILE    TokenType = "WHILE"    // while loop
 	BREAK    TokenType = "BREAK"    // break statement
+	CONTINUE TokenType = "CONTINUE" // continue statement
 )
 
 // Map of AssignmentOperators to their TokenType constants.
@@ -92,15 +94,17 @@ type Token struct {
 
 // Map of Keywords to their TokenType constants.
 var Keywords = map[string]TokenType{
-	"fn":     FUNCTION,
-	"let":    LET,
-	"true":   TRUE,
-	"false":  FALSE,
-	"if":     IF,
-	"else":   ELSE,
-	"return": RETURN,
-	"for":    FOR,
-	"break":  BREAK,
+	"fn":       FUNCTION,
+	"let":      LET,
+	"true":     TRUE,
+	"false":    FALSE,
+	"if":       IF,
+	"else":     ELSE,
+	"return":   RETURN,
+	"for":      FOR,
+	"while":    WHILE,
+	"break":    BREAK,
+	"continue": CONTINUE,
 }
 
 /*

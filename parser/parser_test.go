@@ -1104,7 +1104,7 @@ func TestForLoop(t *testing.T) {
 		t.Fatalf("program has not enough statements. got=%d", len(program.Statements))
 	}
 
-	forStmt, ok := program.Statements[0].(*ast.ForLoopStatement)
+	forStmt, ok := program.Statements[0].(*ast.LoopStatement)
 	if !ok {
 		t.Fatalf("stmt not *ast.ForStatement. got=%T", program.Statements[0])
 	}
@@ -1151,7 +1151,7 @@ func TestEmptyForLoop(t *testing.T) {
 	program := p.ParseProgram()
 	checkParserErrors(t, p)
 
-	forStmt, ok := program.Statements[0].(*ast.ForLoopStatement)
+	forStmt, ok := program.Statements[0].(*ast.LoopStatement)
 	if !ok {
 		t.Fatalf("stmt not *ast.ForStatement. got=%T", program.Statements[0])
 	}
@@ -1207,5 +1207,83 @@ func TestCompoundAssignmentOperators(t *testing.T) {
 		if assignStmt.TokenLiteral() != tt.operator {
 			t.Fatalf("assignStmt.Operator not %s. got=%s", tt.operator, assignStmt.TokenLiteral())
 		}
+	}
+}
+
+func TestWhileLoops(t *testing.T) {
+	input := `
+	while (x < 10) {
+		x += 1;
+	}
+	`
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	whileStmt, ok := program.Statements[0].(*ast.LoopStatement)
+	if !ok {
+		t.Fatalf("stmt not *ast.WhileStatement. got=%T", program.Statements[0])
+	}
+
+	if whileStmt.Initializer != nil {
+		t.Fatalf("whileStmt.Initializer not %s. got=%s", "nil", whileStmt.Initializer.String())
+	}
+
+	if whileStmt.Update != nil {
+		t.Fatalf("whileStmt.Update not %s. got=%s", "nil", whileStmt.Update.String())
+	}
+
+	if whileStmt.Condition.String() != "(x < 10)" {
+		t.Fatalf("whileStmt.Condition not %s. got=%s", "x < 10", whileStmt.Condition.String())
+	}
+
+	if len(whileStmt.Body.Statements) != 1 {
+		t.Fatalf("whileStmt.Body.Statements has not 1 statements. got=%d\n", len(whileStmt.Body.Statements))
+	}
+
+	bodyStmt, ok := whileStmt.Body.Statements[0].(*ast.AssignStatement)
+	if !ok {
+		t.Fatalf("while body stmt is not ast.AssignStatement. got=%T", whileStmt.Body.Statements[0])
+	}
+
+	if bodyStmt.Name.Value != "x" {
+		t.Fatalf("bodyStmt.Name.Value not %s. got=%s", "x", bodyStmt.Name.Value)
+	}
+
+	if bodyStmt.Value.String() != "1" {
+		t.Fatalf("bodyStmt.Value not %s. got=%s", "1", bodyStmt.Value.String())
+	}
+}
+
+func TestContinueStatement(t *testing.T) {
+	input := `
+	for (;;) {
+		continue;
+	}
+	`
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	forStmt, ok := program.Statements[0].(*ast.LoopStatement)
+	if !ok {
+		t.Fatalf("stmt not *ast.ForStatement. got=%T", program.Statements[0])
+	}
+
+	if len(forStmt.Body.Statements) != 1 {
+		t.Fatalf("forStmt.Body.Statements has not 1 statements. got=%d\n", len(forStmt.Body.Statements))
+	}
+
+	bodyStmt, ok := forStmt.Body.Statements[0].(*ast.ContinueStatement)
+	if !ok {
+		t.Fatalf("for body stmt is not ast.ContinueStatement. got=%T", forStmt.Body.Statements[0])
+	}
+
+	if bodyStmt.TokenLiteral() != "continue" {
+		t.Fatalf("bodyStmt.TokenLiteral not %s. got=%s", "continue", bodyStmt.TokenLiteral())
 	}
 }

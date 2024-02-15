@@ -32,8 +32,9 @@ const (
 	COMPILED_FUNCTION_OBJ = "COMPILED_FUNCTION"
 	CLOSURE_OBJ           = "CLOSURE"
 
-	COMPILED_FOR_OBJ = "COMPILED_FOR"
-	BREAK_OBJ        = "BREAK"
+	COMPILED_LOOP_OBJ = "COMPILED_LOOP"
+	BREAK_OBJ         = "BREAK"
+	CONTINUE_OBJ      = "CONTINUE"
 )
 
 type HashKey struct {
@@ -216,18 +217,23 @@ func (c *Closure) Inspect() string {
 	return fmt.Sprintf("Closure[%p]", c)
 }
 
-type CompiledFor struct {
+type CompiledLoop struct {
 	Instructions code.Instructions
 	NumLocals    int
 	Free         []int
 }
 
-func (cf *CompiledFor) Type() ObjectType { return COMPILED_FOR_OBJ }
-func (cf *CompiledFor) Inspect() string {
-	return fmt.Sprintf("CompiledFor[%p]", cf)
+func (l *CompiledLoop) Type() ObjectType { return COMPILED_LOOP_OBJ }
+func (l *CompiledLoop) Inspect() string {
+	return fmt.Sprintf("CompiledFor[%p]", l)
 }
 
 type Break struct{}
 
 func (b *Break) Type() ObjectType { return BREAK_OBJ }
 func (b *Break) Inspect() string  { return "break" }
+
+type Continue struct{}
+
+func (c *Continue) Type() ObjectType { return CONTINUE_OBJ }
+func (c *Continue) Inspect() string  { return "continue" }

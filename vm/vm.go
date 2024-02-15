@@ -263,7 +263,7 @@ func (vm *VM) Run() error {
 			freeIndex := code.ReadUint8(ins[ip+1:])
 			vm.currentFrame().ip++
 
-			currentLoop, ok := vm.currentFrame().obj.(*object.CompiledFor)
+			currentLoop, ok := vm.currentFrame().obj.(*object.CompiledLoop)
 			if !ok {
 				return fmt.Errorf("not a compiled for loop: %+v", vm.currentFrame().obj)
 			}
@@ -281,19 +281,13 @@ func (vm *VM) Run() error {
 				if err != nil {
 					return err
 				}
-			case *object.CompiledFor:
+			case *object.CompiledLoop:
 				free := vm.stack[current.Free[freeIndex]]
 				err := vm.push(free)
 				if err != nil {
 					return err
 				}
 			}
-
-			// currentClosure := vm.currentFrame().obj.(*object.Closure)
-			// err := vm.push(currentClosure.Free[freeIndex])
-			// if err != nil {
-			// 	return err
-			// }
 
 		case code.OpCurrentClosure:
 			currentClosure := vm.currentFrame().obj.(*object.Closure)
@@ -302,11 +296,11 @@ func (vm *VM) Run() error {
 				return err
 			}
 
-		case code.OpForLoop:
+		case code.OpLoop:
 			constIndex := code.ReadUint16(ins[ip+1:])
 			vm.currentFrame().ip += 2
 
-			compiledFor, ok := vm.constants[constIndex].(*object.CompiledFor)
+			compiledFor, ok := vm.constants[constIndex].(*object.CompiledLoop)
 			if !ok {
 				return fmt.Errorf("not a compiled for loop: %+v", vm.constants[constIndex])
 			}
@@ -323,7 +317,7 @@ func (vm *VM) Run() error {
 			vm.sp = loopFrame.basePointer + compiledFor.NumLocals
 
 		case code.OpBreak:
-			_, ok := vm.currentFrame().obj.(*object.CompiledFor)
+			_, ok := vm.currentFrame().obj.(*object.CompiledLoop)
 			if !ok {
 				return fmt.Errorf("break statement outside for loop: %+v", vm.currentFrame().obj)
 			}

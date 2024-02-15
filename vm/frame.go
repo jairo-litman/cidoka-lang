@@ -23,7 +23,7 @@ func (f *Frame) Instructions() code.Instructions {
 	switch obj := f.obj.(type) {
 	case *object.Closure:
 		return obj.Fn.Instructions
-	case *object.CompiledFor:
+	case *object.CompiledLoop:
 		return obj.Instructions
 	default:
 		return nil

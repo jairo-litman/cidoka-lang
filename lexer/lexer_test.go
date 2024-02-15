@@ -217,6 +217,22 @@ func TestNextToken(t *testing.T) {
 				{token.EOF, ""},
 			},
 		},
+		{
+			input: `while (true) {
+				continue;
+			}`,
+			expected: []ExpectedToken{
+				{token.WHILE, "while"},
+				{token.LPAREN, "("},
+				{token.TRUE, "true"},
+				{token.RPAREN, ")"},
+				{token.LBRACE, "{"},
+				{token.CONTINUE, "continue"},
+				{token.SEMICOLON, ";"},
+				{token.RBRACE, "}"},
+				{token.EOF, ""},
+			},
+		},
 	}
 
 	for _, tt := range tests {

@@ -214,8 +214,12 @@ func (parser *Parser) parseStatement() ast.Statement {
 		return parser.parseReturnStatement()
 	case token.FOR:
 		return parser.parseForLoopStatement()
+	case token.WHILE:
+		return parser.parseWhileLoopStatement()
 	case token.BREAK:
 		return parser.parseBreakStatement()
+	case token.CONTINUE:
+		return parser.parseContinueStatement()
 	case token.IDENT:
 		if token.AssignmentOperators[parser.peekToken.Type] {
 			return parser.parseAssignStatement()
@@ -306,9 +310,40 @@ func (parser *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	return stmt
 }
 
+/* Parses a while loop statement and returns the resulting AST node */
+func (parser *Parser) parseWhileLoopStatement() ast.Statement {
+	stmt := &ast.LoopStatement{Token: parser.curToken}
+
+	stmt.Initializer = nil
+	stmt.Update = nil
+
+	if !parser.expectPeek(token.LPAREN) {
+		return nil
+	}
+
+	parser.nextToken()
+	stmt.Condition = parser.parseExpression(LOWEST)
+
+	if parser.peekTokenIs(token.SEMICOLON) {
+		parser.nextToken()
+	}
+
+	if !parser.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	if !parser.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	stmt.Body = parser.parseBlockStatement()
+
+	return stmt
+}
+
 /* Parses a for loop statement and returns the resulting AST node */
 func (parser *Parser) parseForLoopStatement() ast.Statement {
-	stmt := &ast.ForLoopStatement{Token: parser.curToken}
+	stmt := &ast.LoopStatement{Token: parser.curToken}
 
 	if !parser.expectPeek(token.LPAREN) {
 		return nil
@@ -363,6 +398,16 @@ func (parser *Parser) parseForLoopStatement() ast.Statement {
 /* Parses a break statement and returns the resulting AST node */
 func (parser *Parser) parseBreakStatement() *ast.BreakStatement {
 	stmt := &ast.BreakStatement{Token: parser.curToken}
+
+	if parser.peekTokenIs(token.SEMICOLON) {
+		parser.nextToken()
+	}
+
+	return stmt
+}
+
+func (parser *Parser) parseContinueStatement() *ast.ContinueStatement {
+	stmt := &ast.ContinueStatement{Token: parser.curToken}
 
 	if parser.peekTokenIs(token.SEMICOLON) {
 		parser.nextToken()
