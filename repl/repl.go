@@ -10,21 +10,36 @@ import (
 	"cidoka/vm"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 
 	"github.com/peterh/liner"
 )
 
+var historyFile = filepath.Join(os.TempDir(), ".cidoka_lang_history")
+
 const PROMPT = ">> "
 
-func Start(in io.Reader, out io.Writer, engine string, liner *liner.State) {
+func Start(in io.Reader, out io.Writer, engine string) {
 	var env *object.Environment
 	var constants []object.Object
 	var globals []object.Object
 	var symbolTable *compiler.SymbolTable
 
+	liner := liner.NewLiner()
+	defer liner.Close()
+
+	liner.SetCtrlCAborts(true)
+	liner.SetCompleter(completer)
+
+	if f, err := os.Open(historyFile); err == nil {
+		liner.ReadHistory(f)
+		f.Close()
+	}
+
 	if engine == "eval" {
 		env = object.NewEnvironment()
-	} else if engine == "vm" {
+	} else {
 		constants = []object.Object{}
 		globals = make([]object.Object, vm.GlobalsSize)
 
@@ -35,14 +50,12 @@ func Start(in io.Reader, out io.Writer, engine string, liner *liner.State) {
 		}
 	}
 
-	liner.SetCompleter(completer)
-
 	for {
-		scanned, err := liner.Prompt(PROMPT)
+		scanned, err := scanInput(liner)
 		if err != nil {
+			writeHistory(liner)
 			return
 		}
-
 		liner.AppendHistory(scanned)
 
 		lex := lexer.New(scanned)
@@ -105,4 +118,33 @@ func completer(line string) (c []string) {
 	}
 
 	return
+}
+
+func scanInput(liner *liner.State) (string, error) {
+	var scanned string
+
+	for {
+		scannedLine, err := liner.Prompt(PROMPT)
+		if err != nil {
+			return "", err
+		}
+
+		if scannedLine == "" {
+			continue
+		}
+
+		scanned += scannedLine
+		break
+	}
+
+	return scanned, nil
+}
+
+func writeHistory(liner *liner.State) {
+	if f, err := os.Create(historyFile); err != nil {
+		fmt.Printf("Error writing history file: %s\n", err)
+	} else {
+		liner.WriteHistory(f)
+		f.Close()
+	}
 }
