@@ -219,9 +219,9 @@ func (c *Compiler) Compile(node ast.Node) error {
 		numLoc := c.symbolTable.numDefinitions
 		ins := c.leaveScope()
 
-		free := make([]int, len(freeSymbols))
+		free := make([]object.FreeVariable, len(freeSymbols))
 		for i, s := range freeSymbols {
-			free[i] = s.Index
+			free[i] = object.FreeVariable{Index: s.Index, Scope: s.ScopeIndex}
 		}
 
 		compiled := &object.CompiledLoop{

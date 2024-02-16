@@ -14,11 +14,12 @@ type Symbol struct {
 	Name       string
 	Scope      SymbolScope
 	Index      int
-	StackIndex int
+	ScopeIndex int
 }
 
 type SymbolTable struct {
-	Outer *SymbolTable
+	Outer      *SymbolTable
+	ScopeIndex int
 
 	store          map[string]Symbol
 	numDefinitions int
@@ -29,17 +30,18 @@ type SymbolTable struct {
 func NewSymbolTable() *SymbolTable {
 	s := make(map[string]Symbol)
 	free := []Symbol{}
-	return &SymbolTable{store: s, numDefinitions: 0, FreeSymbols: free}
+	return &SymbolTable{store: s, numDefinitions: 0, FreeSymbols: free, ScopeIndex: 0}
 }
 
 func NewEnclosedSymbolTable(outer *SymbolTable) *SymbolTable {
 	s := NewSymbolTable()
 	s.Outer = outer
+	s.ScopeIndex = outer.ScopeIndex + 1
 	return s
 }
 
 func (s *SymbolTable) Define(name string) Symbol {
-	symbol := Symbol{Name: name, Index: s.numDefinitions}
+	symbol := Symbol{Name: name, Index: s.numDefinitions, ScopeIndex: s.ScopeIndex}
 
 	if s.Outer == nil {
 		symbol.Scope = GlobalScope
@@ -78,13 +80,13 @@ func (s *SymbolTable) ResolveNoRecursion(name string) (Symbol, bool) {
 }
 
 func (s *SymbolTable) DefineBuiltin(index int, name string) Symbol {
-	symbol := Symbol{Name: name, Index: index, Scope: BuiltinScope}
+	symbol := Symbol{Name: name, Index: index, Scope: BuiltinScope, ScopeIndex: -1}
 	s.store[name] = symbol
 	return symbol
 }
 
 func (s *SymbolTable) DefineFunctionName(name string) Symbol {
-	symbol := Symbol{Name: name, Index: 0, Scope: FunctionScope}
+	symbol := Symbol{Name: name, Index: 0, Scope: FunctionScope, ScopeIndex: -1}
 	s.store[name] = symbol
 	return symbol
 }
@@ -94,6 +96,7 @@ func (s *SymbolTable) defineFree(original Symbol) Symbol {
 
 	symbol := Symbol{Name: original.Name, Index: len(s.FreeSymbols) - 1}
 	symbol.Scope = FreeScope
+	symbol.ScopeIndex = original.ScopeIndex
 
 	s.store[original.Name] = symbol
 	return symbol

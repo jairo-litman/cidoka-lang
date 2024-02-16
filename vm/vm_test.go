@@ -719,6 +719,20 @@ func TestForLoop(t *testing.T) {
 			`,
 			expected: 45,
 		},
+		{
+			input: `
+			let sum = 0;
+			for (let i = 0; i < 10; i += 1) {
+				for (let j = 0; j < 10; j += 1) {
+					for (let k = 0; k < 10; k += 1) {
+						sum += k + j + i;
+					}
+				}
+			}
+			sum;
+			`,
+			expected: 13500,
+		},
 	}
 
 	runVmTests(t, tests)

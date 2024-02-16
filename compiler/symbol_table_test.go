@@ -4,12 +4,12 @@ import "testing"
 
 func TestDefine(t *testing.T) {
 	expected := map[string]Symbol{
-		"a": {Name: "a", Scope: GlobalScope, Index: 0},
-		"b": {Name: "b", Scope: GlobalScope, Index: 1},
-		"c": {Name: "c", Scope: LocalScope, Index: 0},
-		"d": {Name: "d", Scope: LocalScope, Index: 1},
-		"e": {Name: "e", Scope: LocalScope, Index: 0},
-		"f": {Name: "f", Scope: LocalScope, Index: 1},
+		"a": {Name: "a", Scope: GlobalScope, Index: 0, ScopeIndex: 0},
+		"b": {Name: "b", Scope: GlobalScope, Index: 1, ScopeIndex: 0},
+		"c": {Name: "c", Scope: LocalScope, Index: 0, ScopeIndex: 1},
+		"d": {Name: "d", Scope: LocalScope, Index: 1, ScopeIndex: 1},
+		"e": {Name: "e", Scope: LocalScope, Index: 0, ScopeIndex: 2},
+		"f": {Name: "f", Scope: LocalScope, Index: 1, ScopeIndex: 2},
 	}
 
 	global := NewSymbolTable()
@@ -55,8 +55,8 @@ func TestResolveGlobal(t *testing.T) {
 	global.Define("b")
 
 	expected := []Symbol{
-		{Name: "a", Scope: GlobalScope, Index: 0},
-		{Name: "b", Scope: GlobalScope, Index: 1},
+		{Name: "a", Scope: GlobalScope, Index: 0, ScopeIndex: 0},
+		{Name: "b", Scope: GlobalScope, Index: 1, ScopeIndex: 0},
 	}
 
 	for _, sym := range expected {
@@ -81,10 +81,10 @@ func TestResolveLocal(t *testing.T) {
 	local.Define("d")
 
 	expected := []Symbol{
-		{Name: "a", Scope: GlobalScope, Index: 0},
-		{Name: "b", Scope: GlobalScope, Index: 1},
-		{Name: "c", Scope: LocalScope, Index: 0},
-		{Name: "d", Scope: LocalScope, Index: 1},
+		{Name: "a", Scope: GlobalScope, Index: 0, ScopeIndex: 0},
+		{Name: "b", Scope: GlobalScope, Index: 1, ScopeIndex: 0},
+		{Name: "c", Scope: LocalScope, Index: 0, ScopeIndex: 1},
+		{Name: "d", Scope: LocalScope, Index: 1, ScopeIndex: 1},
 	}
 
 	for _, sym := range expected {
@@ -119,19 +119,19 @@ func TestResolveNestedLocal(t *testing.T) {
 		{
 			firstLocal,
 			[]Symbol{
-				{Name: "a", Scope: GlobalScope, Index: 0},
-				{Name: "b", Scope: GlobalScope, Index: 1},
-				{Name: "c", Scope: LocalScope, Index: 0},
-				{Name: "d", Scope: LocalScope, Index: 1},
+				{Name: "a", Scope: GlobalScope, Index: 0, ScopeIndex: 0},
+				{Name: "b", Scope: GlobalScope, Index: 1, ScopeIndex: 0},
+				{Name: "c", Scope: LocalScope, Index: 0, ScopeIndex: 1},
+				{Name: "d", Scope: LocalScope, Index: 1, ScopeIndex: 1},
 			},
 		},
 		{
 			secondLocal,
 			[]Symbol{
-				{Name: "a", Scope: GlobalScope, Index: 0},
-				{Name: "b", Scope: GlobalScope, Index: 1},
-				{Name: "e", Scope: LocalScope, Index: 0},
-				{Name: "f", Scope: LocalScope, Index: 1},
+				{Name: "a", Scope: GlobalScope, Index: 0, ScopeIndex: 0},
+				{Name: "b", Scope: GlobalScope, Index: 1, ScopeIndex: 0},
+				{Name: "e", Scope: LocalScope, Index: 0, ScopeIndex: 2},
+				{Name: "f", Scope: LocalScope, Index: 1, ScopeIndex: 2},
 			},
 		},
 	}
@@ -156,10 +156,10 @@ func TestDefineResolveBuiltins(t *testing.T) {
 	secondLocal := NewEnclosedSymbolTable(firstLocal)
 
 	expected := []Symbol{
-		{Name: "a", Scope: BuiltinScope, Index: 0},
-		{Name: "c", Scope: BuiltinScope, Index: 1},
-		{Name: "e", Scope: BuiltinScope, Index: 2},
-		{Name: "f", Scope: BuiltinScope, Index: 3},
+		{Name: "a", Scope: BuiltinScope, Index: 0, ScopeIndex: -1},
+		{Name: "c", Scope: BuiltinScope, Index: 1, ScopeIndex: -1},
+		{Name: "e", Scope: BuiltinScope, Index: 2, ScopeIndex: -1},
+		{Name: "f", Scope: BuiltinScope, Index: 3, ScopeIndex: -1},
 	}
 
 	for i, v := range expected {
@@ -201,26 +201,26 @@ func TestResolveFree(t *testing.T) {
 		{
 			firstLocal,
 			[]Symbol{
-				{Name: "a", Scope: GlobalScope, Index: 0},
-				{Name: "b", Scope: GlobalScope, Index: 1},
-				{Name: "c", Scope: LocalScope, Index: 0},
-				{Name: "d", Scope: LocalScope, Index: 1},
+				{Name: "a", Scope: GlobalScope, Index: 0, ScopeIndex: 0},
+				{Name: "b", Scope: GlobalScope, Index: 1, ScopeIndex: 0},
+				{Name: "c", Scope: LocalScope, Index: 0, ScopeIndex: 1},
+				{Name: "d", Scope: LocalScope, Index: 1, ScopeIndex: 1},
 			},
 			[]Symbol{},
 		},
 		{
 			secondLocal,
 			[]Symbol{
-				{Name: "a", Scope: GlobalScope, Index: 0},
-				{Name: "b", Scope: GlobalScope, Index: 1},
-				{Name: "c", Scope: FreeScope, Index: 0},
-				{Name: "d", Scope: FreeScope, Index: 1},
-				{Name: "e", Scope: LocalScope, Index: 0},
-				{Name: "f", Scope: LocalScope, Index: 1},
+				{Name: "a", Scope: GlobalScope, Index: 0, ScopeIndex: 0},
+				{Name: "b", Scope: GlobalScope, Index: 1, ScopeIndex: 0},
+				{Name: "c", Scope: FreeScope, Index: 0, ScopeIndex: 1},
+				{Name: "d", Scope: FreeScope, Index: 1, ScopeIndex: 1},
+				{Name: "e", Scope: LocalScope, Index: 0, ScopeIndex: 2},
+				{Name: "f", Scope: LocalScope, Index: 1, ScopeIndex: 2},
 			},
 			[]Symbol{
-				{Name: "c", Scope: LocalScope, Index: 0},
-				{Name: "d", Scope: LocalScope, Index: 1},
+				{Name: "c", Scope: LocalScope, Index: 0, ScopeIndex: 1},
+				{Name: "d", Scope: LocalScope, Index: 1, ScopeIndex: 1},
 			},
 		},
 	}
@@ -263,10 +263,10 @@ func TestResolveUnresolvableFree(t *testing.T) {
 	secondLocal.Define("f")
 
 	expected := []Symbol{
-		{Name: "a", Scope: GlobalScope, Index: 0},
-		{Name: "c", Scope: FreeScope, Index: 0},
-		{Name: "e", Scope: LocalScope, Index: 0},
-		{Name: "f", Scope: LocalScope, Index: 1},
+		{Name: "a", Scope: GlobalScope, Index: 0, ScopeIndex: 0},
+		{Name: "c", Scope: FreeScope, Index: 0, ScopeIndex: 1},
+		{Name: "e", Scope: LocalScope, Index: 0, ScopeIndex: 2},
+		{Name: "f", Scope: LocalScope, Index: 1, ScopeIndex: 2},
 	}
 
 	for _, sym := range expected {
@@ -297,7 +297,7 @@ func TestDefineAndResolveFunctionName(t *testing.T) {
 	global := NewSymbolTable()
 	global.DefineFunctionName("a")
 
-	expected := Symbol{Name: "a", Scope: FunctionScope, Index: 0}
+	expected := Symbol{Name: "a", Scope: FunctionScope, Index: 0, ScopeIndex: -1}
 
 	result, ok := global.Resolve(expected.Name)
 	if !ok {
@@ -314,7 +314,7 @@ func TestShadowingFunctionName(t *testing.T) {
 	global.DefineFunctionName("a")
 	global.Define("a")
 
-	expected := Symbol{Name: "a", Scope: GlobalScope, Index: 0}
+	expected := Symbol{Name: "a", Scope: GlobalScope, Index: 0, ScopeIndex: 0}
 
 	result, ok := global.Resolve(expected.Name)
 	if !ok {

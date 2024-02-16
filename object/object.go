@@ -220,12 +220,17 @@ func (c *Closure) Inspect() string {
 type CompiledLoop struct {
 	Instructions code.Instructions
 	NumLocals    int
-	Free         []int
+	Free         []FreeVariable
 }
 
 func (l *CompiledLoop) Type() ObjectType { return COMPILED_LOOP_OBJ }
 func (l *CompiledLoop) Inspect() string {
 	return fmt.Sprintf("CompiledFor[%p]", l)
+}
+
+type FreeVariable struct {
+	Index int
+	Scope int
 }
 
 type Break struct{}

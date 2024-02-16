@@ -24,7 +24,7 @@ type VM struct {
 	globals []object.Object
 
 	frames      []*Frame
-	framesIndex int
+	framesIndex int // Always points to the next frame. Current frame is frames[framesIndex-1]
 }
 
 func New(bytecode *compiler.Bytecode) *VM {
@@ -265,10 +265,11 @@ func (vm *VM) Run() error {
 
 			currentLoop, ok := vm.currentFrame().obj.(*object.CompiledLoop)
 			if !ok {
-				return fmt.Errorf("not a compiled for loop: %+v", vm.currentFrame().obj)
+				return fmt.Errorf("attempting to modify a free variable outside a compiled for loop: %+v", vm.currentFrame().obj)
 			}
 
-			idx := currentLoop.Free[freeIndex]
+			freeVar := currentLoop.Free[freeIndex]
+			idx := vm.nFrame(freeVar.Scope).basePointer + int(freeVar.Index)
 			vm.stack[idx] = vm.pop()
 
 		case code.OpGetFree:
@@ -282,8 +283,9 @@ func (vm *VM) Run() error {
 					return err
 				}
 			case *object.CompiledLoop:
-				free := vm.stack[current.Free[freeIndex]]
-				err := vm.push(free)
+				freeVar := current.Free[freeIndex]
+				idx := vm.nFrame(freeVar.Scope).basePointer + int(freeVar.Index)
+				err := vm.push(vm.stack[idx])
 				if err != nil {
 					return err
 				}
@@ -305,9 +307,9 @@ func (vm *VM) Run() error {
 				return fmt.Errorf("not a compiled for loop: %+v", vm.constants[constIndex])
 			}
 
-			for i, freeIndex := range compiledFor.Free {
-				compiledFor.Free[i] = vm.currentFrame().basePointer + int(freeIndex)
-			}
+			// for i, freeIndex := range compiledFor.Free {
+			// 	compiledFor.Free[i] = vm.currentFrame().basePointer + int(freeIndex)
+			// }
 
 			vm.push(compiledFor)
 
@@ -355,6 +357,10 @@ func (vm *VM) pop() object.Object {
 
 func (vm *VM) currentFrame() *Frame {
 	return vm.frames[vm.framesIndex-1]
+}
+
+func (vm *VM) nFrame(n int) *Frame {
+	return vm.frames[vm.framesIndex-1-n]
 }
 
 func (vm *VM) pushFrame(f *Frame) {
