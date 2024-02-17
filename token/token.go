@@ -43,8 +43,8 @@ const (
 
 	// Logical operators
 
-	AND  TokenType = "&&" // todo
-	OR   TokenType = "||" // todo
+	AND  TokenType = "&&" // and
+	OR   TokenType = "||" // or
 	BANG TokenType = "!"  // negation
 
 	// Delimiters

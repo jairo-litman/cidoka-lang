@@ -26,23 +26,23 @@ func (l *Lexer) NextToken() token.Token {
 
 	switch l.ch {
 	case '=':
-		tok = l.compundableAssignment(token.ASSIGN, token.EQ)
+		tok = l.compundableAssignment('=', token.ASSIGN, token.EQ)
 	case '+':
-		tok = l.compundableAssignment(token.PLUS, token.PLUS_EQ)
+		tok = l.compundableAssignment('=', token.PLUS, token.PLUS_EQ)
 	case '-':
-		tok = l.compundableAssignment(token.MINUS, token.MINUS_EQ)
+		tok = l.compundableAssignment('=', token.MINUS, token.MINUS_EQ)
 	case '!':
-		tok = l.compundableAssignment(token.BANG, token.NOT_EQ)
+		tok = l.compundableAssignment('=', token.BANG, token.NOT_EQ)
 	case '*':
-		tok = l.compundableAssignment(token.ASTERISK, token.ASTERISK_EQ)
+		tok = l.compundableAssignment('=', token.ASTERISK, token.ASTERISK_EQ)
 	case '/':
-		tok = l.compundableAssignment(token.SLASH, token.SLASH_EQ)
+		tok = l.compundableAssignment('=', token.SLASH, token.SLASH_EQ)
 	case '%':
-		tok = l.compundableAssignment(token.MODULO, token.MODULO_EQ)
+		tok = l.compundableAssignment('=', token.MODULO, token.MODULO_EQ)
 	case '<':
-		tok = l.compundableAssignment(token.LT, token.LT_EQ)
+		tok = l.compundableAssignment('=', token.LT, token.LT_EQ)
 	case '>':
-		tok = l.compundableAssignment(token.GT, token.GT_EQ)
+		tok = l.compundableAssignment('=', token.GT, token.GT_EQ)
 	case ';':
 		tok = newToken(token.SEMICOLON, l.ch)
 	case ',':
@@ -61,6 +61,10 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.RBRACKET, l.ch)
 	case ':':
 		tok = newToken(token.COLON, l.ch)
+	case '&':
+		tok = l.compundableAssignment('&', token.ILLEGAL, token.AND)
+	case '|':
+		tok = l.compundableAssignment('|', token.ILLEGAL, token.OR)
 	case '"':
 		tok.Type = token.STRING
 		tok.Literal = l.readString()
@@ -189,12 +193,12 @@ func (l *Lexer) readNumber() (string, token.TokenType) {
 Reads the next compoundable assignment operator in the input and advances the position and
 readPosition pointers in the input string to the end of the operator
 
-If the next character is not an '=', it returns the single operator token.
+If the next character is not char (e.g '='), it returns the single operator token.
 If it is, it returns the compound operator token
 */
-func (l *Lexer) compundableAssignment(single token.TokenType, compound token.TokenType) token.Token {
+func (l *Lexer) compundableAssignment(char byte, single token.TokenType, compound token.TokenType) token.Token {
 	ch := l.ch
-	if l.peekChar() != '=' {
+	if l.peekChar() != char {
 		return newToken(single, ch)
 	}
 

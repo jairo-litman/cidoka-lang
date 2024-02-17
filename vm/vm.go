@@ -113,6 +113,12 @@ func (vm *VM) Run() error {
 				return err
 			}
 
+		case code.OpAnd, code.OpOr:
+			err := vm.executeLogicalOperation(op)
+			if err != nil {
+				return err
+			}
+
 		case code.OpMinus:
 			err := vm.executeMinusOperator()
 			if err != nil {
@@ -516,6 +522,23 @@ func (vm *VM) executeFloatComparison(op code.Opcode, left, right object.Object) 
 		return vm.push(nativeBoolToBooleanObject(leftVal <= rightVal))
 	default:
 		return fmt.Errorf("unknown float operator: %d", op)
+	}
+}
+
+func (vm *VM) executeLogicalOperation(op code.Opcode) error {
+	right := vm.pop()
+	left := vm.pop()
+
+	leftBool := isTruthy(left)
+	rightBool := isTruthy(right)
+
+	switch op {
+	case code.OpAnd:
+		return vm.push(nativeBoolToBooleanObject(leftBool && rightBool))
+	case code.OpOr:
+		return vm.push(nativeBoolToBooleanObject(leftBool || rightBool))
+	default:
+		return fmt.Errorf("unknown boolean operator: %d", op)
 	}
 }
 

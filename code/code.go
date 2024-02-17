@@ -73,6 +73,8 @@ const (
 
 	OpTrue  // Push a true value to the stack
 	OpFalse // Push a false value to the stack
+	OpAnd   // Pop the top two elements of the stack and perform a boolean AND, push the result to the stack
+	OpOr    // Pop the top two elements of the stack and perform a boolean OR, push the result to the stack
 
 	// Comparison Opcodes
 
@@ -160,6 +162,10 @@ var definitions = map[Opcode]*Definition{
 	OpGreaterOrEqual: {"OpGreaterOrEqual", []int{}}, // No operands, 1 byte in total
 	OpLessThan:       {"OpLessThan", []int{}},       // No operands, 1 byte in total
 	OpLessOrEqual:    {"OpLessOrEqual", []int{}},    // No operands, 1 byte in total
+
+	// Logical Opcodes
+	OpAnd: {"OpAnd", []int{}}, // No operands, 1 byte in total
+	OpOr:  {"OpOr", []int{}},  // No operands, 1 byte in total
 
 	// Prefix Opcodes
 
