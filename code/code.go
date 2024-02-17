@@ -73,6 +73,8 @@ const (
 
 	OpTrue  // Push a true value to the stack
 	OpFalse // Push a false value to the stack
+	OpAnd   // Pop the top two elements of the stack and perform a boolean AND, push the result to the stack
+	OpOr    // Pop the top two elements of the stack and perform a boolean OR, push the result to the stack
 
 	// Comparison Opcodes
 
