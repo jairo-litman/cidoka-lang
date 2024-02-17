@@ -233,6 +233,16 @@ func TestNextToken(t *testing.T) {
 				{token.EOF, ""},
 			},
 		},
+		{
+			input: `&& || & |`,
+			expected: []ExpectedToken{
+				{token.AND, "&&"},
+				{token.OR, "||"},
+				{token.ILLEGAL, "&"},
+				{token.ILLEGAL, "|"},
+				{token.EOF, ""},
+			},
+		},
 	}
 
 	for _, tt := range tests {

@@ -83,6 +83,10 @@ const (
 	OpLessThan       // Pop the top two elements of the stack and compare for less than, push the result to the stack
 	OpLessOrEqual    // Pop the top two elements of the stack and compare for less or equal, push the result to the stack
 
+	// Logical Opcodes
+	OpAnd // Pop the top two elements of the stack and perform a boolean AND, push the result to the stack
+	OpOr  // Pop the top two elements of the stack and perform a boolean OR, push the result to the stack
+
 	// Prefix Opcodes
 
 	OpMinus // Pop the top element of the stack, perform arithmetic negation and push the result to the stack
@@ -160,6 +164,10 @@ var definitions = map[Opcode]*Definition{
 	OpGreaterOrEqual: {"OpGreaterOrEqual", []int{}}, // No operands, 1 byte in total
 	OpLessThan:       {"OpLessThan", []int{}},       // No operands, 1 byte in total
 	OpLessOrEqual:    {"OpLessOrEqual", []int{}},    // No operands, 1 byte in total
+
+	// Logical Opcodes
+	OpAnd: {"OpAnd", []int{}}, // No operands, 1 byte in total
+	OpOr:  {"OpOr", []int{}},  // No operands, 1 byte in total
 
 	// Prefix Opcodes
 

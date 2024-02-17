@@ -11,6 +11,7 @@ import (
 const (
 	_ int = iota
 	LOWEST
+	LOGICAL     // && or ||
 	EQUALS      // == or !=
 	LESSGREATER // <, >, <=, or >=
 	SUM         // + or -
@@ -28,6 +29,8 @@ For example, the expression 5 + 10 * 2 is grouped as 5 + (10 * 2) because the * 
 has a higher precedence than the + operator.
 */
 var precedences = map[token.TokenType]int{
+	token.AND:      LOGICAL,
+	token.OR:       LOGICAL,
 	token.EQ:       EQUALS,
 	token.NOT_EQ:   EQUALS,
 	token.LT:       LESSGREATER,
@@ -106,6 +109,9 @@ func New(lex *lexer.Lexer) *Parser {
 
 	parser.registerInfix(token.LPAREN, parser.parseCallExpression)
 	parser.registerInfix(token.LBRACKET, parser.parseIndexExpression)
+
+	parser.registerInfix(token.AND, parser.parseInfixExpression)
+	parser.registerInfix(token.OR, parser.parseInfixExpression)
 
 	// Read two tokens, so curToken and peekToken are both set
 	parser.nextToken()

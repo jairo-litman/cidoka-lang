@@ -1287,3 +1287,34 @@ func TestContinueStatement(t *testing.T) {
 		t.Fatalf("bodyStmt.TokenLiteral not %s. got=%s", "continue", bodyStmt.TokenLiteral())
 	}
 }
+
+func TestLogicalOperators(t *testing.T) {
+	tests := []struct {
+		input    string
+		operator string
+	}{
+		{"true && false;", "&&"},
+		{"true || false;", "||"},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("stmt not *ast.ExpressionStatement. got=%T", program.Statements[0])
+		}
+
+		exp, ok := stmt.Expression.(*ast.InfixExpression)
+		if !ok {
+			t.Fatalf("stmt.Expression not *ast.InfixExpression. got=%T", stmt.Expression)
+		}
+
+		if exp.Operator != tt.operator {
+			t.Fatalf("exp.Operator not %s. got=%s", tt.operator, exp.Operator)
+		}
+	}
+}
