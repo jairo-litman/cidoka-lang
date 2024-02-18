@@ -354,12 +354,10 @@ func (parser *Parser) parseForLoopStatement() ast.Statement {
 
 	parser.nextToken()
 	switch parser.curToken.Type {
-	case token.LET:
-		stmt.Initializer = parser.parseLetStatement()
 	case token.SEMICOLON:
 		stmt.Initializer = nil
 	default:
-		stmt.Initializer = parser.parseExpressionStatement()
+		stmt.Initializer = parser.parseStatement()
 	}
 
 	parser.nextToken()
@@ -379,7 +377,7 @@ func (parser *Parser) parseForLoopStatement() ast.Statement {
 	case token.RPAREN:
 		stmt.Update = nil
 	default:
-		stmt.Update = parser.parseExpressionStatement()
+		stmt.Update = parser.parseStatement()
 
 		if !parser.expectPeek(token.RPAREN) {
 			return nil
