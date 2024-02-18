@@ -240,7 +240,7 @@ Cidoka comes with a few built-in functions which are run in Go. These functions 
 
 ## License
 
-This project is licensed under the GNU GENERAL PUBLIC LICENSE V3 License - see the LICENSE file for details
+This project is licensed under the GNU AFFERO GENERAL PUBLIC LICENSE Version 3 - see the LICENSE file for details
 
 ## Acknowledgments
 
