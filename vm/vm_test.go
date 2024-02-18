@@ -851,3 +851,16 @@ func TestContinue(t *testing.T) {
 
 	runVmTests(t, tests)
 }
+
+func TestArrayReassignment(t *testing.T) {
+	tests := []vmTestCase{
+		{"let a = [1, 2, 3]; a[0] = 4; a[0]", 4},
+		{"let a = [1, 2, 3]; a[0] = 4; a[1]", 2},
+		{"let a = [1, 2, 3]; a[0] = 4; a[2]", 3},
+		{"let a = [1, 2, 3]; a[0] = 4; a[3]", Null},
+		{"let a = [1, 2, 3]; a[0] = 4; a[-1]", Null},
+		{"let a = [1, 2, 3]; a[0] = 4; a[1] = 5; a[2] = 6; a", []int{4, 5, 6}},
+	}
+
+	runVmTests(t, tests)
+}

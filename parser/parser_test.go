@@ -1074,17 +1074,26 @@ func TestAssignStatement(t *testing.T) {
 		return
 	}
 
-	assignStmt, ok := program.Statements[1].(*ast.AssignStatement)
+	exprStmt, ok := program.Statements[1].(*ast.ExpressionStatement)
 	if !ok {
-		t.Fatalf("stmt not *ast.AssignStatement. got=%T", program.Statements[1])
+		t.Fatalf("stmt not *ast.ExpressionStatement. got=%T", program.Statements[1])
 	}
 
-	if assignStmt.Name.Value != "x" {
-		t.Fatalf("assignStmt.Name.Value not %s. got=%s", "x", assignStmt.Name.Value)
+	assignExpr, ok := exprStmt.Expression.(*ast.AssignExpression)
+	if !ok {
+		t.Fatalf("stmt.Expression not *ast.AssignExpression. got=%T", exprStmt.Expression)
 	}
 
-	if assignStmt.Value.String() != "10" {
-		t.Fatalf("assignStmt.Value not %s. got=%s", "10", assignStmt.Value.String())
+	if assignExpr.Left.String() != "x" {
+		t.Fatalf("assignExpr.Left not %s. got=%s", "x", assignExpr.Left.String())
+	}
+
+	if assignExpr.Operator != "=" {
+		t.Fatalf("assignExpr.Operator not %s. got=%s", "=", assignExpr.Operator)
+	}
+
+	if assignExpr.Right.String() != "10" {
+		t.Fatalf("assignExpr.Right not %s. got=%s", "10", assignExpr.Right.String())
 	}
 }
 
@@ -1109,16 +1118,33 @@ func TestForLoop(t *testing.T) {
 		t.Fatalf("stmt not *ast.ForStatement. got=%T", program.Statements[0])
 	}
 
+	if _, ok := forStmt.Initializer.(*ast.LetStatement); !ok {
+		t.Fatalf("forStmt.Initializer not *ast.LetStatement. got=%T", forStmt.Initializer)
+	}
+
 	if forStmt.Initializer.String() != "let i = 0;" {
 		t.Fatalf("forStmt.Initializer not %s. got=%s", "let i = 0;", forStmt.Initializer.String())
+	}
+
+	if _, ok := forStmt.Condition.(*ast.InfixExpression); !ok {
+		t.Fatalf("forStmt.Condition not *ast.InfixExpression. got=%T", forStmt.Condition)
 	}
 
 	if forStmt.Condition.String() != "(i < 10)" {
 		t.Fatalf("forStmt.Condition not %s. got=%s", "i < 10", forStmt.Condition.String())
 	}
 
-	if forStmt.Update.String() != "i = (i + 1);" {
-		t.Fatalf("forStmt.Runner not %s. got=%s", "i = (i + 1)", forStmt.Update.String())
+	updateStmt, ok := forStmt.Update.(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("forStmt.Update not *ast.ExpressionStatement. got=%T", forStmt.Update)
+	}
+
+	if _, ok := updateStmt.Expression.(*ast.AssignExpression); !ok {
+		t.Fatalf("updateStmt.Expression not *ast.AssignExpression. got=%T", forStmt.Update)
+	}
+
+	if forStmt.Update.String() != "i = (i + 1)" {
+		t.Fatalf("forStmt.Update not %s. got=%s", "i = (i + 1)", forStmt.Update.String())
 	}
 
 	if len(forStmt.Body.Statements) != 1 {
@@ -1199,13 +1225,18 @@ func TestCompoundAssignmentOperators(t *testing.T) {
 		program := p.ParseProgram()
 		checkParserErrors(t, p)
 
-		assignStmt, ok := program.Statements[0].(*ast.AssignStatement)
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
 		if !ok {
-			t.Fatalf("stmt not *ast.AssignStatement. got=%T", program.Statements[0])
+			t.Fatalf("stmt not *ast.ExpressionStatement. got=%T", program.Statements[0])
 		}
 
-		if assignStmt.TokenLiteral() != tt.operator {
-			t.Fatalf("assignStmt.Operator not %s. got=%s", tt.operator, assignStmt.TokenLiteral())
+		assignExpr, ok := stmt.Expression.(*ast.AssignExpression)
+		if !ok {
+			t.Fatalf("stmt.Expression not *ast.AssignExpression. got=%T", stmt.Expression)
+		}
+
+		if assignExpr.Operator != tt.operator {
+			t.Fatalf("assignExpr.Operator not %s. got=%s", tt.operator, assignExpr.Operator)
 		}
 	}
 }
@@ -1243,17 +1274,13 @@ func TestWhileLoops(t *testing.T) {
 		t.Fatalf("whileStmt.Body.Statements has not 1 statements. got=%d\n", len(whileStmt.Body.Statements))
 	}
 
-	bodyStmt, ok := whileStmt.Body.Statements[0].(*ast.AssignStatement)
+	bodyStmt, ok := whileStmt.Body.Statements[0].(*ast.ExpressionStatement)
 	if !ok {
-		t.Fatalf("while body stmt is not ast.AssignStatement. got=%T", whileStmt.Body.Statements[0])
+		t.Fatalf("while body stmt is not ast.ExpressionStatement. got=%T", whileStmt.Body.Statements[0])
 	}
 
-	if bodyStmt.Name.Value != "x" {
-		t.Fatalf("bodyStmt.Name.Value not %s. got=%s", "x", bodyStmt.Name.Value)
-	}
-
-	if bodyStmt.Value.String() != "1" {
-		t.Fatalf("bodyStmt.Value not %s. got=%s", "1", bodyStmt.Value.String())
+	if bodyStmt.Expression.String() != "x += 1" {
+		t.Fatalf("bodyStmt.Expression not %s. got=%s", "x += 1", bodyStmt.Expression.String())
 	}
 }
 

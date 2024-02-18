@@ -492,7 +492,7 @@ func TestIndexExpressions(t *testing.T) {
 				code.Make(code.OpConstant, 3),
 				code.Make(code.OpConstant, 4),
 				code.Make(code.OpAdd),
-				code.Make(code.OpIndex),
+				code.Make(code.OpGetIndex),
 				code.Make(code.OpPop),
 			},
 		},
@@ -506,7 +506,7 @@ func TestIndexExpressions(t *testing.T) {
 				code.Make(code.OpConstant, 2),
 				code.Make(code.OpConstant, 3),
 				code.Make(code.OpSub),
-				code.Make(code.OpIndex),
+				code.Make(code.OpGetIndex),
 				code.Make(code.OpPop),
 			},
 		},
@@ -1091,6 +1091,7 @@ func TestAssignment(t *testing.T) {
 				code.Make(code.OpSetGlobal, 0),
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpPop),
 			},
 		},
 		{
@@ -1120,6 +1121,7 @@ func TestAssignment(t *testing.T) {
 				code.Make(code.OpSetGlobal, 1),
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpPop),
 			},
 		},
 	}
@@ -1220,7 +1222,7 @@ func TestForLoops(t *testing.T) {
 					// 0010
 					code.Make(code.OpLessThan),
 					// 0011 - exit loop if false
-					code.Make(code.OpJumpNotTruthy, 28),
+					code.Make(code.OpJumpNotTruthy, 29),
 					// 0014 - loop body ({ i })
 					code.Make(code.OpGetLocal, 0),
 					// 0016
@@ -1233,9 +1235,11 @@ func TestForLoops(t *testing.T) {
 					code.Make(code.OpAdd),
 					// 0023
 					code.Make(code.OpSetLocal, 0),
-					// 0025 - jump back to condition
+					// 0025
+					code.Make(code.OpPop),
+					// 0026 - jump back to condition
 					code.Make(code.OpJump, 5),
-					// 0028 - exit loop
+					// 0029 - exit loop
 					code.Make(code.OpBreak),
 				},
 			},
@@ -1268,7 +1272,7 @@ func TestForLoops(t *testing.T) {
 					// 0010
 					code.Make(code.OpLessThan),
 					// 0011 - exit loop if false
-					code.Make(code.OpJumpNotTruthy, 34),
+					code.Make(code.OpJumpNotTruthy, 36),
 					// 0014 - loop body ({ sum = sum + i })
 					code.Make(code.OpGetGlobal, 0),
 					// 0017
@@ -1277,17 +1281,21 @@ func TestForLoops(t *testing.T) {
 					code.Make(code.OpAdd),
 					// 0020
 					code.Make(code.OpSetGlobal, 0),
-					// 0023 - loop increment (i = i + 1)
+					// 0023
+					code.Make(code.OpPop),
+					// 0024 - loop increment (i = i + 1)
 					code.Make(code.OpGetLocal, 0),
-					// 0025
+					// 0026
 					code.Make(code.OpConstant, 3),
-					// 0028
-					code.Make(code.OpAdd),
 					// 0029
+					code.Make(code.OpAdd),
+					// 0030
 					code.Make(code.OpSetLocal, 0),
-					// 0031 - jump back to condition
+					// 0032
+					code.Make(code.OpPop),
+					// 0033 - jump back to condition
 					code.Make(code.OpJump, 5),
-					// 0034 - exit loop
+					// 0036 - exit loop
 					code.Make(code.OpBreak),
 				},
 			},
@@ -1328,7 +1336,7 @@ func TestForLoops(t *testing.T) {
 					// 0010
 					code.Make(code.OpLessThan),
 					// 0011 - exit loop if false
-					code.Make(code.OpJumpNotTruthy, 49),
+					code.Make(code.OpJumpNotTruthy, 51),
 					// 0014 - loop body ({ if ... })
 					code.Make(code.OpGetLocal, 0),
 					// 0016
@@ -1353,17 +1361,21 @@ func TestForLoops(t *testing.T) {
 					code.Make(code.OpAdd),
 					// 0035
 					code.Make(code.OpSetGlobal, 0),
-					// 0038 - loop increment (i = i + 1)
+					// 0038
+					code.Make(code.OpPop),
+					// 0039 - loop increment (i = i + 1)
 					code.Make(code.OpGetLocal, 0),
-					// 0040
+					// 0041
 					code.Make(code.OpConstant, 4),
-					// 0043
-					code.Make(code.OpAdd),
 					// 0044
+					code.Make(code.OpAdd),
+					// 0045
 					code.Make(code.OpSetLocal, 0),
-					// 0046 - jump back to condition
+					// 0047
+					code.Make(code.OpPop),
+					// 0048 - jump back to condition
 					code.Make(code.OpJump, 5),
-					// 0049 - exit loop
+					// 0051 - exit loop
 					code.Make(code.OpBreak),
 				},
 			},
@@ -1403,7 +1415,7 @@ func TestForLoops(t *testing.T) {
 					// 0002 - condition
 					code.Make(code.OpTrue),
 					// 0003
-					code.Make(code.OpJumpNotTruthy, 37),
+					code.Make(code.OpJumpNotTruthy, 38),
 					// 0006 - loop body
 					code.Make(code.OpGetGlobal, 0),
 					// 0009
@@ -1428,13 +1440,15 @@ func TestForLoops(t *testing.T) {
 					code.Make(code.OpAdd),
 					// 0029
 					code.Make(code.OpSetGlobal, 0),
-					// 0032 - increment
-					code.Make(code.OpNull),
-					// 0033
+					// 0032
 					code.Make(code.OpPop),
-					// 0034 - jump back to condition
+					// 0033 - increment
+					code.Make(code.OpNull),
+					// 0034
+					code.Make(code.OpPop),
+					// 0035 - jump back to condition
 					code.Make(code.OpJump, 2),
-					// 0037 - exit loop
+					// 0038 - exit loop
 					code.Make(code.OpBreak),
 				},
 			},
@@ -1471,6 +1485,7 @@ func TestCompoundAssignment(t *testing.T) {
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpAdd),
 				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpPop),
 			},
 		},
 		{
@@ -1486,6 +1501,7 @@ func TestCompoundAssignment(t *testing.T) {
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpSub),
 				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpPop),
 			},
 		},
 		{
@@ -1501,6 +1517,7 @@ func TestCompoundAssignment(t *testing.T) {
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpMul),
 				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpPop),
 			},
 		},
 		{
@@ -1516,6 +1533,7 @@ func TestCompoundAssignment(t *testing.T) {
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpDiv),
 				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpPop),
 			},
 		},
 		{
@@ -1531,6 +1549,7 @@ func TestCompoundAssignment(t *testing.T) {
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpMod),
 				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpPop),
 			},
 		},
 		{
@@ -1548,6 +1567,7 @@ func TestCompoundAssignment(t *testing.T) {
 				code.Make(code.OpMul),
 				code.Make(code.OpAdd),
 				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpPop),
 			},
 		},
 	}
@@ -1624,7 +1644,7 @@ func TestContinueStatement(t *testing.T) {
 					// 0010
 					code.Make(code.OpLessThan),
 					// 0011 - exit loop if false
-					code.Make(code.OpJumpNotTruthy, 51),
+					code.Make(code.OpJumpNotTruthy, 53),
 					// 0014 - loop body ({ if ... })
 					code.Make(code.OpGetLocal, 0),
 					// 0016
@@ -1634,7 +1654,7 @@ func TestContinueStatement(t *testing.T) {
 					// 0020
 					code.Make(code.OpJumpNotTruthy, 29),
 					// 0023
-					code.Make(code.OpJump, 40),
+					code.Make(code.OpJump, 41),
 					// 0026
 					code.Make(code.OpJump, 30),
 					// 0029
@@ -1649,17 +1669,21 @@ func TestContinueStatement(t *testing.T) {
 					code.Make(code.OpAdd),
 					// 0037
 					code.Make(code.OpSetGlobal, 0),
-					// 0040 - loop increment (j = j + 1)
+					// 0040
+					code.Make(code.OpPop),
+					// 0041 - loop increment (j = j + 1)
 					code.Make(code.OpGetLocal, 0),
-					// 0042
+					// 0043
 					code.Make(code.OpConstant, 6),
-					// 0045
-					code.Make(code.OpAdd),
 					// 0046
+					code.Make(code.OpAdd),
+					// 0047
 					code.Make(code.OpSetLocal, 0),
-					// 0048 - jump back to condition
+					// 0049
+					code.Make(code.OpPop),
+					// 0050 - jump back to condition
 					code.Make(code.OpJump, 5),
-					// 0051 - exit loop
+					// 0053 - exit loop
 					code.Make(code.OpBreak),
 				},
 				1,
@@ -1675,7 +1699,7 @@ func TestContinueStatement(t *testing.T) {
 					// 0008
 					code.Make(code.OpLessThan),
 					// 0009 - exit loop if false
-					code.Make(code.OpJumpNotTruthy, 30),
+					code.Make(code.OpJumpNotTruthy, 31),
 					// 0012 - loop body
 					code.Make(code.OpLoop, 7),
 					// 0015
@@ -1686,13 +1710,15 @@ func TestContinueStatement(t *testing.T) {
 					code.Make(code.OpAdd),
 					// 0022
 					code.Make(code.OpSetGlobal, 1),
-					// 0025 - loop increment (nil)
-					code.Make(code.OpNull),
-					// 0026
+					// 0025
 					code.Make(code.OpPop),
-					// 0027 - jump back to condition
+					// 0026 - loop increment (nil)
+					code.Make(code.OpNull),
+					// 0027
+					code.Make(code.OpPop),
+					// 0028 - jump back to condition
 					code.Make(code.OpJump, 2),
-					// 0030 - exit loop
+					// 0031 - exit loop
 					code.Make(code.OpBreak),
 				},
 			},

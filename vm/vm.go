@@ -148,7 +148,9 @@ func (vm *VM) Run() error {
 			globalIndex := code.ReadUint16(ins[ip+1:])
 			vm.currentFrame().ip += 2
 
-			vm.globals[globalIndex] = vm.pop()
+			val := vm.pop()
+			vm.globals[globalIndex] = val
+			vm.push(val)
 
 		case code.OpGetGlobal:
 			globalIndex := code.ReadUint16(ins[ip+1:])
@@ -165,7 +167,9 @@ func (vm *VM) Run() error {
 
 			frame := vm.currentFrame()
 
-			vm.stack[frame.basePointer+int(localIndex)] = vm.pop()
+			val := vm.pop()
+			vm.stack[frame.basePointer+int(localIndex)] = val
+			vm.push(val)
 
 		case code.OpGetLocal:
 			localIndex := code.ReadUint8(ins[ip+1:])
@@ -206,11 +210,21 @@ func (vm *VM) Run() error {
 				return err
 			}
 
-		case code.OpIndex:
+		case code.OpSetIndex:
+			newVal := vm.pop()
 			index := vm.pop()
 			left := vm.pop()
 
-			err := vm.executeIndexExpression(left, index)
+			err := vm.executeSetIndexExpression(left, index, newVal)
+			if err != nil {
+				return err
+			}
+
+		case code.OpGetIndex:
+			index := vm.pop()
+			left := vm.pop()
+
+			err := vm.executeGetIndexExpression(left, index)
 			if err != nil {
 				return err
 			}
@@ -276,7 +290,9 @@ func (vm *VM) Run() error {
 
 			freeVar := currentLoop.Free[freeIndex]
 			idx := vm.nFrame(freeVar.Scope).basePointer + int(freeVar.Index)
-			vm.stack[idx] = vm.pop()
+			val := vm.pop()
+			vm.stack[idx] = val
+			vm.push(val)
 
 		case code.OpGetFree:
 			freeIndex := code.ReadUint8(ins[ip+1:])
@@ -312,10 +328,6 @@ func (vm *VM) Run() error {
 			if !ok {
 				return fmt.Errorf("not a compiled for loop: %+v", vm.constants[constIndex])
 			}
-
-			// for i, freeIndex := range compiledFor.Free {
-			// 	compiledFor.Free[i] = vm.currentFrame().basePointer + int(freeIndex)
-			// }
 
 			vm.push(compiledFor)
 
@@ -621,18 +633,54 @@ func (vm *VM) buildHash(startIndex, endIndex int) (object.Object, error) {
 	return &object.Hash{Pairs: hashedPairs}, nil
 }
 
-func (vm *VM) executeIndexExpression(left, index object.Object) error {
+func (vm *VM) executeSetIndexExpression(left, index, newVal object.Object) error {
 	switch {
 	case left.Type() == object.ARRAY_OBJ && index.Type() == object.INTEGER_OBJ:
-		return vm.executeArrayIndex(left, index)
+		return vm.executeArrayIndexSet(left, index, newVal)
 	case left.Type() == object.HASH_OBJ:
-		return vm.executeHashIndex(left, index)
+		return vm.executeHashSet(left, index, newVal)
 	default:
 		return fmt.Errorf("index operator not supported: %s", left.Type())
 	}
 }
 
-func (vm *VM) executeArrayIndex(array, index object.Object) error {
+func (vm *VM) executeArrayIndexSet(array, index, newVal object.Object) error {
+	arrayObject := array.(*object.Array)
+	idx := index.(*object.Integer).Value
+	max := int64(len(arrayObject.Elements) - 1)
+
+	if idx < 0 || idx > max {
+		return fmt.Errorf("index out of range: %d", idx)
+	}
+
+	arrayObject.Elements[idx] = newVal
+	return nil
+}
+
+func (vm *VM) executeHashSet(hash, index, newVal object.Object) error {
+	hashObject := hash.(*object.Hash)
+	key, ok := index.(object.Hashable)
+	if !ok {
+		return fmt.Errorf("unusable as hash key: %s", index.Type())
+	}
+
+	hashed := key.HashKey()
+	hashObject.Pairs[hashed] = object.HashPair{Key: index, Value: newVal}
+	return nil
+}
+
+func (vm *VM) executeGetIndexExpression(left, index object.Object) error {
+	switch {
+	case left.Type() == object.ARRAY_OBJ && index.Type() == object.INTEGER_OBJ:
+		return vm.executeGetArrayIndex(left, index)
+	case left.Type() == object.HASH_OBJ:
+		return vm.executeGetHashIndex(left, index)
+	default:
+		return fmt.Errorf("index operator not supported: %s", left.Type())
+	}
+}
+
+func (vm *VM) executeGetArrayIndex(array, index object.Object) error {
 	arrayObject := array.(*object.Array)
 	idx := index.(*object.Integer).Value
 	max := int64(len(arrayObject.Elements) - 1)
@@ -644,7 +692,7 @@ func (vm *VM) executeArrayIndex(array, index object.Object) error {
 	return vm.push(arrayObject.Elements[idx])
 }
 
-func (vm *VM) executeHashIndex(hash, index object.Object) error {
+func (vm *VM) executeGetHashIndex(hash, index object.Object) error {
 	hashObject := hash.(*object.Hash)
 	key, ok := index.(object.Hashable)
 	if !ok {

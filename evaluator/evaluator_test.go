@@ -302,7 +302,7 @@ func TestFunctionObject(t *testing.T) {
 		t.Fatalf("parameter is not 'x'. got=%q", fn.Parameters[0])
 	}
 
-	expectedBody := "(x + 2)"
+	expectedBody := "{ (x + 2) }"
 	if fn.Body.String() != expectedBody {
 		t.Fatalf("body is not %q. got=%q", expectedBody, fn.Body.String())
 	}
@@ -783,4 +783,14 @@ func TestContinueStatement(t *testing.T) {
 	`
 
 	testIntegerObject(t, testEval(input), 25)
+}
+
+func TestArrayIndexReassignment(t *testing.T) {
+	input := `
+	let arr = [1, 2, 3];
+	arr[0+1] = 3 * 3;
+	arr[1];
+	`
+
+	testIntegerObject(t, testEval(input), 9)
 }

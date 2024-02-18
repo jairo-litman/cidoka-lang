@@ -106,9 +106,10 @@ const (
 
 	// Data Structure Opcodes
 
-	OpArray // Push an array to the stack made from the n elements below it
-	OpHash  // Push a hash to the stack made from the n elements below it // n is even
-	OpIndex // Pop the top two elements of the stack, using the first as an index to the second, push the result to the stack
+	OpArray    // Push an array to the stack made from the n elements below it
+	OpHash     // Push a hash to the stack made from the n elements below it // n is even
+	OpSetIndex // Pop the top three elements of the stack, using the first as the value and the second as an index to the third
+	OpGetIndex // Pop the top two elements of the stack, using the first as an index to the second, push the result to the stack
 
 	// Function Opcodes
 
@@ -188,9 +189,10 @@ var definitions = map[Opcode]*Definition{
 
 	// Data Structure Opcodes
 
-	OpArray: {"OpArray", []int{2}}, // Single operand of 2 bytes, 3 bytes in total
-	OpHash:  {"OpHash", []int{2}},  // Single operand of 2 bytes, 3 bytes in total
-	OpIndex: {"OpIndex", []int{}},  // No operands, 1 byte in total
+	OpArray:    {"OpArray", []int{2}},   // Single operand of 2 bytes, 3 bytes in total
+	OpHash:     {"OpHash", []int{2}},    // Single operand of 2 bytes, 3 bytes in total
+	OpSetIndex: {"OpSetIndex", []int{}}, // No operands, 1 byte in total
+	OpGetIndex: {"OpGetIndex", []int{}}, // No operands, 1 byte in total
 
 	// Function Opcodes
 

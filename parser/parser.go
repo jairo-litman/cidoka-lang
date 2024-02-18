@@ -11,16 +11,19 @@ import (
 const (
 	_ int = iota
 	LOWEST
+	ASSIGN      // =, +=, -=, *=, /=, %=
 	LOGICAL_OR  // ||
 	LOGICAL_AND // &&
-	EQUALS      // == or !=
-	LESSGREATER // <, >, <=, or >=
-	SUM         // + or -
-	PRODUCT     // *, / or %
-	PREFIX      // -X or !X
+	EQUALS      // ==, !=
+	LESSGREATER // <, >, <=, >=
+	SUM         // +, -
+	PRODUCT     // *, /, %
+	PREFIX      // -X, !X
 	CALL        // myFunction(X)
-	INDEX       // array[index]
+	INDEX       // array[index], hash[key]
 )
+
+var assignCounter int
 
 /*
 Maps token types to their respective precedences
@@ -30,21 +33,27 @@ For example, the expression 5 + 10 * 2 is grouped as 5 + (10 * 2) because the * 
 has a higher precedence than the + operator.
 */
 var precedences = map[token.TokenType]int{
-	token.OR:       LOGICAL_OR,
-	token.AND:      LOGICAL_AND,
-	token.EQ:       EQUALS,
-	token.NOT_EQ:   EQUALS,
-	token.LT:       LESSGREATER,
-	token.GT:       LESSGREATER,
-	token.LT_EQ:    LESSGREATER,
-	token.GT_EQ:    LESSGREATER,
-	token.PLUS:     SUM,
-	token.MINUS:    SUM,
-	token.SLASH:    PRODUCT,
-	token.ASTERISK: PRODUCT,
-	token.MODULO:   PRODUCT,
-	token.LPAREN:   CALL,
-	token.LBRACKET: INDEX,
+	token.ASSIGN:      ASSIGN,
+	token.PLUS_EQ:     ASSIGN,
+	token.MINUS_EQ:    ASSIGN,
+	token.ASTERISK_EQ: ASSIGN,
+	token.SLASH_EQ:    ASSIGN,
+	token.MODULO_EQ:   ASSIGN,
+	token.OR:          LOGICAL_OR,
+	token.AND:         LOGICAL_AND,
+	token.EQ:          EQUALS,
+	token.NOT_EQ:      EQUALS,
+	token.LT:          LESSGREATER,
+	token.GT:          LESSGREATER,
+	token.LT_EQ:       LESSGREATER,
+	token.GT_EQ:       LESSGREATER,
+	token.PLUS:        SUM,
+	token.MINUS:       SUM,
+	token.SLASH:       PRODUCT,
+	token.ASTERISK:    PRODUCT,
+	token.MODULO:      PRODUCT,
+	token.LPAREN:      CALL,
+	token.LBRACKET:    INDEX,
 }
 
 type (
@@ -95,6 +104,13 @@ func New(lex *lexer.Lexer) *Parser {
 
 	// Infix parse functions
 	parser.infixParseFns = make(map[token.TokenType]infixParseFn)
+	parser.registerInfix(token.ASSIGN, parser.parseAssignExpression)
+	parser.registerInfix(token.PLUS_EQ, parser.parseAssignExpression)
+	parser.registerInfix(token.MINUS_EQ, parser.parseAssignExpression)
+	parser.registerInfix(token.ASTERISK_EQ, parser.parseAssignExpression)
+	parser.registerInfix(token.SLASH_EQ, parser.parseAssignExpression)
+	parser.registerInfix(token.MODULO_EQ, parser.parseAssignExpression)
+
 	parser.registerInfix(token.PLUS, parser.parseInfixExpression)
 	parser.registerInfix(token.MINUS, parser.parseInfixExpression)
 	parser.registerInfix(token.SLASH, parser.parseInfixExpression)
@@ -173,16 +189,13 @@ func (parser *Parser) noPrefixParseFnError(t token.TokenType) {
 	parser.errors = append(parser.errors, msg)
 }
 
-func (parser *Parser) forLoopInvalidInitializerError() {
-	msg := "FOR loop: expected let, identifier or empty initializer followed by a semicolon"
-	parser.errors = append(parser.errors, msg)
-}
-
+/* Appends an error message to the parser's errors list when the parser couldn't parse a token as an integer */
 func (parser *Parser) integerParseError() {
 	msg := fmt.Sprintf("could not parse %q as integer", parser.curToken.Literal)
 	parser.errors = append(parser.errors, msg)
 }
 
+/* Appends an error message to the parser's errors list when the parser couldn't parse a token as a float */
 func (parser *Parser) floatParseError() {
 	msg := fmt.Sprintf("could not parse %q as float", parser.curToken.Literal)
 	parser.errors = append(parser.errors, msg)
@@ -227,11 +240,6 @@ func (parser *Parser) parseStatement() ast.Statement {
 		return parser.parseBreakStatement()
 	case token.CONTINUE:
 		return parser.parseContinueStatement()
-	case token.IDENT:
-		if token.AssignmentOperators[parser.peekToken.Type] {
-			return parser.parseAssignStatement()
-		}
-		fallthrough // if it's not an assign statement, parse it as an expression statement
 	default:
 		expr := parser.parseExpressionStatement()
 		if expr != nil && expr.Expression != nil {
@@ -285,33 +293,21 @@ func (parser *Parser) parseReturnStatement() *ast.ReturnStatement {
 	return stmt
 }
 
-/* Parses an assign statement and returns the resulting AST node */
-func (parser *Parser) parseAssignStatement() *ast.AssignStatement {
-	stmt := &ast.AssignStatement{}
-	stmt.Name = &ast.Identifier{Token: parser.curToken, Value: parser.curToken.Literal}
-
-	parser.nextToken()
-	stmt.Token = parser.curToken
-
-	parser.nextToken()
-
-	stmt.Value = parser.parseExpression(LOWEST)
-
-	if parser.peekTokenIs(token.SEMICOLON) {
-		parser.nextToken()
-	}
-
-	return stmt
-}
-
 /* Parses an expression statement and returns the resulting AST node */
 func (parser *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	stmt := &ast.ExpressionStatement{Token: parser.curToken}
+
+	assignCounter = 0
 
 	stmt.Expression = parser.parseExpression(LOWEST)
 
 	if parser.peekTokenIs(token.SEMICOLON) {
 		parser.nextToken()
+	}
+
+	if assignCounter > 1 {
+		parser.errors = append(parser.errors, "multiple assignments in the same statement are not allowed")
+		return nil
 	}
 
 	return stmt
@@ -360,13 +356,10 @@ func (parser *Parser) parseForLoopStatement() ast.Statement {
 	switch parser.curToken.Type {
 	case token.LET:
 		stmt.Initializer = parser.parseLetStatement()
-	case token.IDENT:
-		stmt.Initializer = parser.parseAssignStatement()
 	case token.SEMICOLON:
 		stmt.Initializer = nil
 	default:
-		parser.forLoopInvalidInitializerError()
-		return nil
+		stmt.Initializer = parser.parseExpressionStatement()
 	}
 
 	parser.nextToken()
@@ -386,7 +379,7 @@ func (parser *Parser) parseForLoopStatement() ast.Statement {
 	case token.RPAREN:
 		stmt.Update = nil
 	default:
-		stmt.Update = parser.parseAssignStatement()
+		stmt.Update = parser.parseExpressionStatement()
 
 		if !parser.expectPeek(token.RPAREN) {
 			return nil
@@ -448,6 +441,21 @@ func (parser *Parser) parseExpression(precedence int) ast.Expression {
 	}
 
 	return leftExp
+}
+
+func (parser *Parser) parseAssignExpression(left ast.Expression) ast.Expression {
+	assignCounter++
+
+	expression := &ast.AssignExpression{
+		Token:    parser.curToken,
+		Operator: parser.curToken.Literal,
+		Left:     left,
+	}
+
+	parser.nextToken()
+	expression.Right = parser.parseExpression(ASSIGN)
+
+	return expression
 }
 
 /* Parses an identifier and returns the resulting AST node */

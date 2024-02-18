@@ -76,30 +76,6 @@ func (letStmt *LetStatement) String() string {
 	return out.String()
 }
 
-// An assign statement, e.g. x = 5;
-type AssignStatement struct {
-	Token token.Token // one of the assignment operator tokens
-	Name  *Identifier // name of the variable
-	Value Expression  // expression that evaluates to the value of the variable
-}
-
-func (assignStmt *AssignStatement) statementNode()       {}
-func (assignStmt *AssignStatement) TokenLiteral() string { return assignStmt.Token.Literal }
-func (assignStmt *AssignStatement) String() string {
-	var out bytes.Buffer
-
-	out.WriteString(assignStmt.Name.String())
-	out.WriteString(" = ")
-
-	if assignStmt.Value != nil {
-		out.WriteString(assignStmt.Value.String())
-	}
-
-	out.WriteString(";")
-
-	return out.String()
-}
-
 // A return statement, e.g. return 5;
 type ReturnStatement struct {
 	Token       token.Token // token.RETURN
@@ -148,9 +124,13 @@ func (blockStmt *BlockStatement) TokenLiteral() string { return blockStmt.Token.
 func (blockStmt *BlockStatement) String() string {
 	var out bytes.Buffer
 
+	out.WriteString("{ ")
+
 	for _, stmt := range blockStmt.Statements {
 		out.WriteString(stmt.String())
 	}
+
+	out.WriteString(" }")
 
 	return out.String()
 }
@@ -160,7 +140,7 @@ type LoopStatement struct {
 	Token       token.Token     // token.FOR or token.WHILE
 	Initializer Statement       // statement that initializes the loop e.g. let i = 0 // or nil
 	Condition   Expression      // expression that evaluates to the condition of the loop e.g. i < 10 // or nil
-	Update      Statement       // statement that updates the loop e.g. i = i + 1 // or nil
+	Update      Statement       // expression that updates the loop e.g. i = i + 1 // or nil
 	Body        *BlockStatement // block statement that makes up the body of the loop
 }
 
@@ -227,6 +207,25 @@ type Identifier struct {
 func (ident *Identifier) expressionNode()      {}
 func (ident *Identifier) TokenLiteral() string { return ident.Token.Literal }
 func (ident *Identifier) String() string       { return ident.Value }
+
+type AssignExpression struct {
+	Token    token.Token // token.IDENT
+	Left     Expression  // left expression to be assigned
+	Operator string      // one of the assignment operator tokens
+	Right    Expression  // right expression to be assigned
+}
+
+func (assignExpr *AssignExpression) expressionNode()      {}
+func (assignExpr *AssignExpression) TokenLiteral() string { return "" }
+func (assignExpr *AssignExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(assignExpr.Left.String())
+	out.WriteString(" " + assignExpr.Operator + " ")
+	out.WriteString(assignExpr.Right.String())
+
+	return out.String()
+}
 
 // An integer literal expression, e.g. 5
 type IntegerLiteral struct {

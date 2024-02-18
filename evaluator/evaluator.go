@@ -51,24 +51,6 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 		return &object.ReturnValue{Value: val}
 
-	case *ast.AssignStatement:
-		oldVal, identEnv, ok := env.Get(node.Name.Value)
-		if !ok {
-			return newError("identifier not declared: " + node.Name.Value)
-		}
-
-		val := Eval(node.Value, env)
-		if isError(val) {
-			return val
-		}
-
-		newVal := handleAssignValue(oldVal, val, node.TokenLiteral())
-		if isError(newVal) {
-			return newVal
-		}
-
-		identEnv.Set(node.Name.Value, newVal)
-
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression, env)
 
@@ -126,6 +108,14 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	// Expressions
 	case *ast.Identifier:
 		return evalIdentifier(node, env)
+
+	case *ast.AssignExpression:
+		right := Eval(node.Right, env)
+		if isError(right) {
+			return right
+		}
+
+		return evalAssignExpression(node.Operator, node.Left, right, env)
 
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
@@ -267,29 +257,6 @@ func evalPrefixExpression(operator string, right object.Object) object.Object {
 	}
 }
 
-func evalInfixExpression(operator string, left, right object.Object) object.Object {
-	switch {
-	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
-		return evalIntegerInfixExpression(operator, left, right)
-	case left.Type() == object.FLOAT_OBJ && right.Type() == object.FLOAT_OBJ:
-		return evalFloatInfixExpression(operator, left, right)
-	case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
-		return evalStringInfixExpression(operator, left, right)
-	case operator == "==":
-		return nativeBoolToBooleanObject(left == right)
-	case operator == "!=":
-		return nativeBoolToBooleanObject(left != right)
-	case operator == "&&":
-		return nativeBoolToBooleanObject(isTruthy(left) && isTruthy(right))
-	case operator == "||":
-		return nativeBoolToBooleanObject(isTruthy(left) || isTruthy(right))
-	case left.Type() != right.Type():
-		return newError("type mismatch: %s %s %s", left.Type(), operator, right.Type())
-	default:
-		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
-	}
-}
-
 func evalBangOperatorExpression(right object.Object) object.Object {
 	switch right {
 	case TRUE:
@@ -313,6 +280,76 @@ func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 		return &object.Float{Value: -value}
 	default:
 		return newError("unknown operator: -%s", right.Type())
+	}
+}
+
+func evalInfixExpression(operator string, left, right object.Object) object.Object {
+	switch {
+	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
+		return evalIntegerInfixExpression(operator, left, right)
+	case left.Type() == object.FLOAT_OBJ && right.Type() == object.FLOAT_OBJ:
+		return evalFloatInfixExpression(operator, left, right)
+	case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
+		return evalStringInfixExpression(operator, left, right)
+
+	case operator == "==":
+		return nativeBoolToBooleanObject(left == right)
+	case operator == "!=":
+		return nativeBoolToBooleanObject(left != right)
+	case operator == "&&":
+		return nativeBoolToBooleanObject(isTruthy(left) && isTruthy(right))
+	case operator == "||":
+		return nativeBoolToBooleanObject(isTruthy(left) || isTruthy(right))
+	case left.Type() != right.Type():
+		return newError("type mismatch: %s %s %s", left.Type(), operator, right.Type())
+	default:
+		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
+	}
+}
+
+func evalAssignExpression(operator string, left ast.Expression, right object.Object, env *object.Environment) object.Object {
+	switch left := left.(type) {
+	case *ast.Identifier:
+		oldVal, identEnv, ok := env.Get(left.Value)
+		if !ok {
+			return newError("identifier not found: " + left.Value)
+		}
+
+		newVal := handleAssignValue(oldVal, right, operator)
+		identEnv.Set(left.Value, newVal)
+
+		return newVal
+
+	case *ast.IndexExpression:
+		leftVal := Eval(left.Left, env)
+		if isError(leftVal) {
+			return leftVal
+		}
+
+		index := Eval(left.Index, env)
+		if isError(index) {
+			return index
+		}
+
+		oldVal := evalIndexExpression(leftVal, index)
+		if isError(oldVal) {
+			return oldVal
+		}
+
+		newVal := handleAssignValue(oldVal, right, operator)
+
+		switch leftVal := leftVal.(type) {
+		case *object.Array:
+			leftVal.Elements[index.(*object.Integer).Value] = newVal
+		case *object.Hash:
+			hash := leftVal
+			hash.Pairs[index.(object.Hashable).HashKey()] = object.HashPair{Key: index, Value: newVal}
+		}
+
+		return newVal
+
+	default:
+		return newError("Assigning to non-identifier or non-index expression")
 	}
 }
 
@@ -554,10 +591,10 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 	return pair.Value
 }
 
-func handleAssignValue(oldVal object.Object, val object.Object, token string) object.Object {
+func handleAssignValue(oldVal object.Object, val object.Object, operator string) object.Object {
 	newVal := val
 
-	switch token {
+	switch operator {
 	case "+=":
 		newVal = evalInfixExpression("+", oldVal, val)
 	case "-=":

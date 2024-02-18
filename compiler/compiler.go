@@ -102,43 +102,6 @@ func (c *Compiler) Compile(node ast.Node) error {
 
 		c.emit(code.OpReturnValue)
 
-	case *ast.AssignStatement:
-		symbol, ok := c.symbolTable.Resolve(node.Name.Value)
-		if !ok {
-			return fmt.Errorf("undeclared variable %s", node.Name.Value)
-		}
-
-		if node.Token.Type != token.ASSIGN {
-			c.loadSymbol(symbol)
-		}
-
-		err := c.Compile(node.Value)
-		if err != nil {
-			return err
-		}
-
-		switch node.Token.Type {
-		case token.PLUS_EQ:
-			c.emit(code.OpAdd)
-		case token.MINUS_EQ:
-			c.emit(code.OpSub)
-		case token.ASTERISK_EQ:
-			c.emit(code.OpMul)
-		case token.SLASH_EQ:
-			c.emit(code.OpDiv)
-		case token.MODULO_EQ:
-			c.emit(code.OpMod)
-		}
-
-		switch scope := symbol.Scope; scope {
-		case GlobalScope:
-			c.emit(code.OpSetGlobal, symbol.Index)
-		case FreeScope:
-			c.emit(code.OpSetFree, symbol.Index)
-		default:
-			c.emit(code.OpSetLocal, symbol.Index)
-		}
-
 	case *ast.ExpressionStatement:
 		err := c.Compile(node.Expression)
 		if err != nil {
@@ -250,6 +213,64 @@ func (c *Compiler) Compile(node ast.Node) error {
 		}
 
 		c.loadSymbol(symbol)
+
+	case *ast.AssignExpression:
+		var symbol Symbol
+
+		switch left := node.Left.(type) {
+		case *ast.Identifier:
+			var ok bool
+			symbol, ok = c.symbolTable.Resolve(left.Value)
+			if !ok {
+				return fmt.Errorf("undefined variable %s", left.Value)
+			}
+
+			if node.Token.Type != token.ASSIGN {
+				c.loadSymbol(symbol)
+			}
+
+		case *ast.IndexExpression:
+			err := c.Compile(left.Left)
+			if err != nil {
+				return err
+			}
+
+			err = c.Compile(left.Index)
+			if err != nil {
+				return err
+			}
+		}
+
+		err := c.Compile(node.Right)
+		if err != nil {
+			return err
+		}
+
+		switch node.Token.Type {
+		case token.PLUS_EQ:
+			c.emit(code.OpAdd)
+		case token.MINUS_EQ:
+			c.emit(code.OpSub)
+		case token.ASTERISK_EQ:
+			c.emit(code.OpMul)
+		case token.SLASH_EQ:
+			c.emit(code.OpDiv)
+		case token.MODULO_EQ:
+			c.emit(code.OpMod)
+		}
+
+		switch node.Left.(type) {
+		case *ast.Identifier:
+			if symbol.Scope == GlobalScope {
+				c.emit(code.OpSetGlobal, symbol.Index)
+			} else if symbol.Scope == FreeScope {
+				c.emit(code.OpSetFree, symbol.Index)
+			} else {
+				c.emit(code.OpSetLocal, symbol.Index)
+			}
+		case *ast.IndexExpression:
+			c.emit(code.OpSetIndex)
+		}
 
 	case *ast.IntegerLiteral:
 		integer := &object.Integer{Value: node.Value}
@@ -465,7 +486,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 			return err
 		}
 
-		c.emit(code.OpIndex)
+		c.emit(code.OpGetIndex)
 	}
 
 	return nil

@@ -203,32 +203,3 @@ func testFloatObject(expected float64, actual object.Object) error {
 
 	return nil
 }
-
-// func constantBytecodeDumper(bc *compiler.Bytecode) {
-// 	for i, constant := range bc.Constants {
-// 		fmt.Printf("CONSTANT %d %p (%T):\n", i, constant, constant)
-
-// 		switch constant := constant.(type) {
-// 		case *object.CompiledFunction:
-// 			fmt.Printf(" Instructions:\n%s", constant.Instructions)
-// 		case *object.Integer:
-// 			fmt.Printf(" Value: %d\n", constant.Value)
-// 		case *object.String:
-// 			fmt.Printf(" Value: %q\n", constant.Value)
-// 		case *object.Array:
-// 			fmt.Printf(" Elements:\n")
-// 			for _, e := range constant.Elements {
-// 				fmt.Printf("  %p (%T)\n", e, e)
-// 			}
-// 		case *object.Hash:
-// 			fmt.Printf(" Pairs:\n")
-// 			for k, v := range constant.Pairs {
-// 				fmt.Printf("  %p (%T) -> %p (%T)\n", &k.Value, k, &v.Value, v)
-// 			}
-// 		case *object.Float:
-// 			fmt.Printf(" Value: %f\n", constant.Value)
-// 		}
-
-// 		fmt.Printf("\n")
-// 	}
-// }
