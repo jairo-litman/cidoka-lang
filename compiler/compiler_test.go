@@ -327,9 +327,9 @@ func TestGlobalLetStatements(t *testing.T) {
 			expectedConstants: []interface{}{1, 2},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpConstant, 1),
-				code.Make(code.OpSetGlobal, 1),
+				code.Make(code.OpDeclareGlobal, 1),
 			},
 		},
 		{
@@ -340,7 +340,7 @@ func TestGlobalLetStatements(t *testing.T) {
 			expectedConstants: []interface{}{1},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpPop),
 			},
@@ -354,9 +354,9 @@ func TestGlobalLetStatements(t *testing.T) {
 			expectedConstants: []interface{}{1},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
-				code.Make(code.OpSetGlobal, 1),
+				code.Make(code.OpDeclareGlobal, 1),
 				code.Make(code.OpGetGlobal, 1),
 				code.Make(code.OpPop),
 			},
@@ -616,7 +616,7 @@ func TestFunctionCalls(t *testing.T) {
 			},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpClosure, 1, 0), // The compiled function
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpCall, 0),
 				code.Make(code.OpPop),
@@ -635,7 +635,7 @@ func TestFunctionCalls(t *testing.T) {
 			},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpClosure, 0, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpCall, 1),
@@ -657,7 +657,7 @@ func TestFunctionCalls(t *testing.T) {
 			},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpClosure, 0, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpConstant, 2),
@@ -680,7 +680,7 @@ func TestFunctionCalls(t *testing.T) {
 			},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpClosure, 0, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpCall, 1),
@@ -707,7 +707,7 @@ func TestFunctionCalls(t *testing.T) {
 			},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpClosure, 0, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpConstant, 2),
@@ -737,7 +737,7 @@ func TestLetStatementScopes(t *testing.T) {
 			},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpClosure, 1, 0),
 				code.Make(code.OpPop),
 			},
@@ -753,7 +753,7 @@ func TestLetStatementScopes(t *testing.T) {
 				55,
 				[]code.Instructions{
 					code.Make(code.OpConstant, 0),
-					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpDeclareLocal, 0),
 					code.Make(code.OpGetLocal, 0),
 					code.Make(code.OpReturnValue),
 				},
@@ -776,9 +776,9 @@ func TestLetStatementScopes(t *testing.T) {
 				77,
 				[]code.Instructions{
 					code.Make(code.OpConstant, 0),
-					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpDeclareLocal, 0),
 					code.Make(code.OpConstant, 1),
-					code.Make(code.OpSetLocal, 1),
+					code.Make(code.OpDeclareLocal, 1),
 					code.Make(code.OpGetLocal, 0),
 					code.Make(code.OpGetLocal, 1),
 					code.Make(code.OpAdd),
@@ -924,7 +924,7 @@ func TestClosures(t *testing.T) {
 				88,
 				[]code.Instructions{
 					code.Make(code.OpConstant, 3),
-					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpDeclareLocal, 0),
 					code.Make(code.OpGetGlobal, 0),
 					code.Make(code.OpGetFree, 0),
 					code.Make(code.OpAdd),
@@ -936,7 +936,7 @@ func TestClosures(t *testing.T) {
 				},
 				[]code.Instructions{
 					code.Make(code.OpConstant, 2),
-					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpDeclareLocal, 0),
 					code.Make(code.OpGetFree, 0),
 					code.Make(code.OpGetLocal, 0),
 					code.Make(code.OpClosure, 4, 2),
@@ -944,7 +944,7 @@ func TestClosures(t *testing.T) {
 				},
 				[]code.Instructions{
 					code.Make(code.OpConstant, 1),
-					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpDeclareLocal, 0),
 					code.Make(code.OpGetLocal, 0),
 					code.Make(code.OpClosure, 5, 1),
 					code.Make(code.OpReturnValue),
@@ -952,7 +952,7 @@ func TestClosures(t *testing.T) {
 			},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpClosure, 6, 0),
 				code.Make(code.OpPop),
 			},
@@ -983,7 +983,7 @@ func TestRecursiveFunctions(t *testing.T) {
 			},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpClosure, 1, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpConstant, 2),
 				code.Make(code.OpCall, 1),
@@ -1011,7 +1011,7 @@ func TestRecursiveFunctions(t *testing.T) {
 				1,
 				[]code.Instructions{
 					code.Make(code.OpClosure, 1, 0),
-					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpDeclareLocal, 0),
 					code.Make(code.OpGetLocal, 0),
 					code.Make(code.OpConstant, 2),
 					code.Make(code.OpCall, 1),
@@ -1020,7 +1020,7 @@ func TestRecursiveFunctions(t *testing.T) {
 			},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpClosure, 3, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpCall, 0),
 				code.Make(code.OpPop),
@@ -1088,7 +1088,7 @@ func TestAssignment(t *testing.T) {
 			expectedConstants: []interface{}{1, 2},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpSetGlobal, 0),
 				code.Make(code.OpPop),
@@ -1102,9 +1102,9 @@ func TestAssignment(t *testing.T) {
 			expectedConstants: []interface{}{1},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
-				code.Make(code.OpSetGlobal, 1),
+				code.Make(code.OpDeclareGlobal, 1),
 			},
 		},
 		{
@@ -1116,9 +1116,9 @@ func TestAssignment(t *testing.T) {
 			expectedConstants: []interface{}{1, 2},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
-				code.Make(code.OpSetGlobal, 1),
+				code.Make(code.OpDeclareGlobal, 1),
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpSetGlobal, 0),
 				code.Make(code.OpPop),
@@ -1141,13 +1141,13 @@ func TestFunctionsAlreadyDeclaredArg(t *testing.T) {
 				2,
 				[]code.Instructions{
 					code.Make(code.OpConstant, 1),
-					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpDeclareLocal, 0),
 					code.Make(code.OpReturn),
 				},
 			},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpClosure, 2, 0),
 				code.Make(code.OpPop),
 			},
@@ -1161,14 +1161,14 @@ func TestFunctionsAlreadyDeclaredArg(t *testing.T) {
 				2,
 				[]code.Instructions{
 					code.Make(code.OpConstant, 0),
-					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpDeclareLocal, 0),
 					code.Make(code.OpGetLocal, 0),
 					code.Make(code.OpReturnValue),
 				},
 			},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpClosure, 1, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpCall, 0),
 				code.Make(code.OpPop),
@@ -1188,7 +1188,7 @@ func TestFunctionsAlreadyDeclaredArg(t *testing.T) {
 			},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpClosure, 0, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpCall, 1),
@@ -1214,7 +1214,7 @@ func TestForLoops(t *testing.T) {
 					// 0000 - init (let i = 0)
 					code.Make(code.OpConstant, 0),
 					// 0003
-					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpDeclareLocal, 0),
 					// 0005 - condition (i < 10)
 					code.Make(code.OpGetLocal, 0),
 					// 0007
@@ -1264,7 +1264,7 @@ func TestForLoops(t *testing.T) {
 					// 0000 - init (let i = 0)
 					code.Make(code.OpConstant, 1),
 					// 0003
-					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpDeclareLocal, 0),
 					// 0005 - condition (i < 10)
 					code.Make(code.OpGetLocal, 0),
 					// 0007
@@ -1301,7 +1301,7 @@ func TestForLoops(t *testing.T) {
 			},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpLoop, 4),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpPop),
@@ -1328,7 +1328,7 @@ func TestForLoops(t *testing.T) {
 					// 0000 - init (let i = 0)
 					code.Make(code.OpConstant, 1),
 					// 0003
-					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpDeclareLocal, 0),
 					// 0005 - condition (i < 10)
 					code.Make(code.OpGetLocal, 0),
 					// 0007
@@ -1383,7 +1383,7 @@ func TestForLoops(t *testing.T) {
 				// 0000
 				code.Make(code.OpConstant, 0),
 				// 0003
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				// 0006
 				code.Make(code.OpLoop, 5),
 				// 0009
@@ -1456,7 +1456,7 @@ func TestForLoops(t *testing.T) {
 				// 0000
 				code.Make(code.OpConstant, 0),
 				// 0003
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				// 0006
 				code.Make(code.OpLoop, 3),
 				// 0009
@@ -1480,7 +1480,7 @@ func TestCompoundAssignment(t *testing.T) {
 			expectedConstants: []interface{}{1, 2},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpAdd),
@@ -1496,7 +1496,7 @@ func TestCompoundAssignment(t *testing.T) {
 			expectedConstants: []interface{}{1, 2},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpSub),
@@ -1512,7 +1512,7 @@ func TestCompoundAssignment(t *testing.T) {
 			expectedConstants: []interface{}{1, 2},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpMul),
@@ -1528,7 +1528,7 @@ func TestCompoundAssignment(t *testing.T) {
 			expectedConstants: []interface{}{1, 2},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpDiv),
@@ -1544,7 +1544,7 @@ func TestCompoundAssignment(t *testing.T) {
 			expectedConstants: []interface{}{1, 2},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpMod),
@@ -1560,7 +1560,7 @@ func TestCompoundAssignment(t *testing.T) {
 			expectedConstants: []interface{}{1, 2, 3},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpConstant, 1),
 				code.Make(code.OpConstant, 2),
@@ -1636,7 +1636,7 @@ func TestContinueStatement(t *testing.T) {
 					// 0000 - init (let j = 0)
 					code.Make(code.OpConstant, 3),
 					// 0003
-					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpDeclareLocal, 0),
 					// 0005 - condition (j < 10)
 					code.Make(code.OpGetLocal, 0),
 					// 0007
@@ -1724,9 +1724,9 @@ func TestContinueStatement(t *testing.T) {
 			},
 			expectedInstructions: []code.Instructions{
 				code.Make(code.OpConstant, 0),
-				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpDeclareGlobal, 0),
 				code.Make(code.OpConstant, 1),
-				code.Make(code.OpSetGlobal, 1),
+				code.Make(code.OpDeclareGlobal, 1),
 				code.Make(code.OpLoop, 9),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpPop),

@@ -89,9 +89,9 @@ func (c *Compiler) Compile(node ast.Node) error {
 		}
 
 		if symbol.Scope == GlobalScope {
-			c.emit(code.OpSetGlobal, symbol.Index)
+			c.emit(code.OpDeclareGlobal, symbol.Index)
 		} else {
-			c.emit(code.OpSetLocal, symbol.Index)
+			c.emit(code.OpDeclareLocal, symbol.Index)
 		}
 
 	case *ast.ReturnStatement:

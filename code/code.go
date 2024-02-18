@@ -99,10 +99,13 @@ const (
 
 	// Variable Opcodes
 
-	OpSetGlobal // Pop the top element of the stack and set it to a global scope variable
-	OpGetGlobal // Push a global scope variable to the stack
-	OpSetLocal  // Pop the top element of the stack and set it to a local scope variable
-	OpGetLocal  // Push a local scope variable to the stack
+	OpDeclareGlobal // Declare a global scope variable
+	OpSetGlobal     // Pop the top element of the stack and set it to a global scope variable
+	OpGetGlobal     // Push a global scope variable to the stack
+
+	OpDeclareLocal // Declare a local scope variable
+	OpSetLocal     // Pop the top element of the stack and set it to a local scope variable
+	OpGetLocal     // Push a local scope variable to the stack
 
 	// Data Structure Opcodes
 
@@ -182,10 +185,13 @@ var definitions = map[Opcode]*Definition{
 
 	// Variable Opcodes
 
-	OpSetGlobal: {"OpSetGlobal", []int{2}}, // Single operand of 2 bytes, 3 bytes in total
-	OpGetGlobal: {"OpGetGlobal", []int{2}}, // Single operand of 2 bytes, 3 bytes in total
-	OpSetLocal:  {"OpSetLocal", []int{1}},  // Single operand of 1 byte, 2 bytes in total
-	OpGetLocal:  {"OpGetLocal", []int{1}},  // Single operand of 1 byte, 2 bytes in total
+	OpDeclareGlobal: {"OpDeclareGlobal", []int{2}}, // Single operand of 2 bytes, 3 bytes in total
+	OpSetGlobal:     {"OpSetGlobal", []int{2}},     // Single operand of 2 bytes, 3 bytes in total
+	OpGetGlobal:     {"OpGetGlobal", []int{2}},     // Single operand of 2 bytes, 3 bytes in total
+
+	OpDeclareLocal: {"OpDeclareLocal", []int{1}}, // Single operand of 1 byte, 2 bytes in total
+	OpSetLocal:     {"OpSetLocal", []int{1}},     // Single operand of 1 byte, 2 bytes in total
+	OpGetLocal:     {"OpGetLocal", []int{1}},     // Single operand of 1 byte, 2 bytes in total
 
 	// Data Structure Opcodes
 
