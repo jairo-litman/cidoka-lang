@@ -1,6 +1,7 @@
 package repl
 
 import (
+	"cidoka/ast"
 	"cidoka/compiler"
 	"cidoka/evaluator"
 	"cidoka/lexer"
@@ -58,12 +59,9 @@ func Start(in io.Reader, out io.Writer, engine string) {
 		}
 		liner.AppendHistory(scanned)
 
-		lex := lexer.New(scanned)
-		parser := parser.New(lex)
-
-		program := parser.ParseProgram()
-		if len(parser.Errors()) != 0 {
-			printParserErrors(out, parser.Errors())
+		program, err := setupProgram(scanned)
+		if err != nil {
+			fmt.Fprintf(out, "Error parsing program: %s\n", err)
 			continue
 		}
 
@@ -92,8 +90,10 @@ func Start(in io.Reader, out io.Writer, engine string) {
 			}
 
 			lastPopped := machine.LastPoppedStackElem()
-			io.WriteString(out, lastPopped.Inspect())
-			io.WriteString(out, "\n")
+			if lastPopped.Type() != object.NULL_OBJ {
+				io.WriteString(out, lastPopped.Inspect())
+				io.WriteString(out, "\n")
+			}
 		}
 	}
 }
@@ -147,4 +147,56 @@ func writeHistory(liner *liner.State) {
 		liner.WriteHistory(f)
 		f.Close()
 	}
+}
+
+func RunFile(file string, engine string) {
+	input, err := os.ReadFile(file)
+	if err != nil {
+		fmt.Printf("Error reading file: %s\n", err)
+		return
+	}
+
+	var result object.Object
+
+	program, err := setupProgram(string(input))
+	if err != nil {
+		fmt.Printf("Error setting up program: %s\n", err)
+		return
+	}
+
+	if engine == "vm" {
+		comp := compiler.New()
+		err := comp.Compile(program)
+		if err != nil {
+			fmt.Printf("Woops! Compilation failed:\n %s\n", err)
+			return
+		}
+
+		machine := vm.New(comp.Bytecode())
+		err = machine.Run()
+		if err != nil {
+			fmt.Printf("Woops! Executing bytecode failed:\n %s\n", err)
+			return
+		}
+
+		result = machine.LastPoppedStackElem()
+	} else {
+		env := object.NewEnvironment()
+		result = evaluator.Eval(program, env)
+	}
+
+	fmt.Printf("engine=%s, result=%s\n", engine, result.Inspect())
+}
+
+func setupProgram(input string) (*ast.Program, error) {
+	l := lexer.New(input)
+	p := parser.New(l)
+	program := p.ParseProgram()
+
+	if len(p.Errors()) != 0 {
+		printParserErrors(os.Stdout, p.Errors())
+		return nil, fmt.Errorf("parsing error")
+	}
+
+	return program, nil
 }
