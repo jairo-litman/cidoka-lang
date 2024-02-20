@@ -29,8 +29,14 @@ func (l *Lexer) NextToken() token.Token {
 		tok = l.compundableAssignment('=', token.ASSIGN, token.EQ)
 	case '+':
 		tok = l.compundableAssignment('=', token.PLUS, token.PLUS_EQ)
+		if tok.Type == token.PLUS {
+			tok = l.compundableAssignment('+', token.PLUS, token.INCREMENT)
+		}
 	case '-':
 		tok = l.compundableAssignment('=', token.MINUS, token.MINUS_EQ)
+		if tok.Type == token.MINUS {
+			tok = l.compundableAssignment('-', token.MINUS, token.DECREMENT)
+		}
 	case '!':
 		tok = l.compundableAssignment('=', token.BANG, token.NOT_EQ)
 	case '*':

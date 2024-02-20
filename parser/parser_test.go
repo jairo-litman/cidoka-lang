@@ -1345,3 +1345,28 @@ func TestLogicalOperators(t *testing.T) {
 		}
 	}
 }
+
+func TestPostfixOperator(t *testing.T) {
+	input := "x++;"
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	println(program.String())
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("stmt not *ast.ExpressionStatement. got=%T", program.Statements[0])
+	}
+
+	exp, ok := stmt.Expression.(*ast.PostfixExpression)
+	if !ok {
+		t.Fatalf("stmt.Expression not *ast.PostfixExpression. got=%T", stmt.Expression)
+	}
+
+	if exp.Operator != "++" {
+		t.Fatalf("exp.Operator not %s. got=%s", "++", exp.Operator)
+	}
+}

@@ -794,3 +794,21 @@ func TestArrayIndexReassignment(t *testing.T) {
 
 	testIntegerObject(t, testEval(input), 9)
 }
+
+func TestPostfixOperator(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"let x = 5; x++; x;", 6},
+		{"let x = 5; x--; x;", 4},
+		{"let x = 5; x++; x++; x;", 7},
+		{"let x = 5; x--; x--; x;", 3},
+		{"let x = 5; let b = x++ + x--; b;", 11},
+		{"let i = 0; let result = i++ * (i + 5); result;", 6},
+	}
+
+	for _, tt := range tests {
+		testIntegerObject(t, testEval(tt.input), tt.expected)
+	}
+}

@@ -1736,3 +1736,54 @@ func TestContinueStatement(t *testing.T) {
 
 	runCompilerTests(t, tests)
 }
+
+func TestPostfixOperators(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input: `
+			let a = 1;
+			a++;
+			`,
+			expectedConstants: []interface{}{1, 1},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpDeclareGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpAdd),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `
+			let a = 1;
+			a--;
+			`,
+			expectedConstants: []interface{}{1, 1},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpDeclareGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpSub),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `
+			20++;
+			`,
+			expectedConstants: []interface{}{20, 1},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpAdd),
+				code.Make(code.OpPop),
+			},
+		},
+	}
+
+	runCompilerTests(t, tests)
+}

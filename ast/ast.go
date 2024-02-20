@@ -309,6 +309,26 @@ func (infixExpr *InfixExpression) String() string {
 	return out.String()
 }
 
+// A postifx expression, e.g. 5++
+type PostfixExpression struct {
+	Token    token.Token // the postfix token, e.g. token.INCREMENT
+	Operator string      // operator to be applied to the left expression
+	Left     Expression  // left expression to be evaluated
+}
+
+func (postfixExpr *PostfixExpression) expressionNode()      {}
+func (postfixExpr *PostfixExpression) TokenLiteral() string { return postfixExpr.Token.Literal }
+func (postfixExpr *PostfixExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(postfixExpr.Left.String())
+	out.WriteString(postfixExpr.Operator)
+	out.WriteString(")")
+
+	return out.String()
+}
+
 // An if expression, e.g. if (x < y) { x } else { y }
 type IfExpression struct {
 	Token       token.Token     // token.IF

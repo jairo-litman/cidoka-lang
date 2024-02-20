@@ -150,6 +150,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 		return evalInfixExpression(node.Operator, left, right)
 
+	case *ast.PostfixExpression:
+		return evalPostfixExpression(node.Operator, node.Left, env)
+
 	case *ast.IfExpression:
 		return evalIfExpression(node, env)
 
@@ -423,6 +426,46 @@ func evalStringInfixExpression(operator string, left, right object.Object) objec
 	leftVal := left.(*object.String).Value
 	rightVal := right.(*object.String).Value
 	return &object.String{Value: leftVal + rightVal}
+}
+
+func evalPostfixExpression(operator string, left ast.Expression, env *object.Environment) object.Object {
+	switch left := left.(type) {
+	case *ast.Identifier, *ast.IndexExpression:
+		var op string
+		if operator == "++" {
+			op = "+="
+		} else {
+			op = "-="
+		}
+
+		right := &object.Integer{Value: 1}
+		return evalAssignExpression(op, left, right, env)
+	default:
+		leftExpr := Eval(left, env)
+		if isError(leftExpr) {
+			return leftExpr
+		}
+
+		switch val := leftExpr.(type) {
+		case *object.Integer:
+			if operator == "++" {
+				val.Value++
+			} else {
+				val.Value--
+			}
+			return val
+		case *object.Float:
+			if operator == "++" {
+				val.Value++
+			} else {
+				val.Value--
+			}
+			return val
+		default:
+			return newError("unknown operator: %s%s", val.Type(), operator)
+		}
+	}
+
 }
 
 func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Object {

@@ -47,6 +47,11 @@ const (
 	OR   TokenType = "||" // or
 	BANG TokenType = "!"  // negation
 
+	// Postfix operators
+
+	INCREMENT TokenType = "++" // increment
+	DECREMENT TokenType = "--" // decrement
+
 	// Delimiters
 
 	COMMA     TokenType = "," // separator

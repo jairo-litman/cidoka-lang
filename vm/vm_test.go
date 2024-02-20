@@ -864,3 +864,16 @@ func TestArrayReassignment(t *testing.T) {
 
 	runVmTests(t, tests)
 }
+
+func TestPostfixOperators(t *testing.T) {
+	tests := []vmTestCase{
+		{"let a = 1; a++; a", 2},
+		{"let a = 1; a--; a", 0},
+		{"let a = 1; a++; a++; a", 3},
+		{"let a = 1; a--; a--; a", -1},
+		{"let x = 5; let b = x++ + x--; b;", 11},
+		{"let i = 0; let result = i++ * (i + 5); result;", 6},
+	}
+
+	runVmTests(t, tests)
+}

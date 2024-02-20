@@ -243,6 +243,19 @@ func TestNextToken(t *testing.T) {
 				{token.EOF, ""},
 			},
 		},
+		{
+			input: `foo++ bar-- foo + bar`,
+			expected: []ExpectedToken{
+				{token.IDENT, "foo"},
+				{token.INCREMENT, "++"},
+				{token.IDENT, "bar"},
+				{token.DECREMENT, "--"},
+				{token.IDENT, "foo"},
+				{token.PLUS, "+"},
+				{token.IDENT, "bar"},
+				{token.EOF, ""},
+			},
+		},
 	}
 
 	for _, tt := range tests {

@@ -246,16 +246,16 @@ func (c *Compiler) Compile(node ast.Node) error {
 			return err
 		}
 
-		switch node.Token.Type {
-		case token.PLUS_EQ:
+		switch node.Operator {
+		case "+=":
 			c.emit(code.OpAdd)
-		case token.MINUS_EQ:
+		case "-=":
 			c.emit(code.OpSub)
-		case token.ASTERISK_EQ:
+		case "*=":
 			c.emit(code.OpMul)
-		case token.SLASH_EQ:
+		case "/=":
 			c.emit(code.OpDiv)
-		case token.MODULO_EQ:
+		case "%=":
 			c.emit(code.OpMod)
 		}
 
@@ -346,6 +346,37 @@ func (c *Compiler) Compile(node ast.Node) error {
 			c.emit(code.OpOr)
 		default:
 			return fmt.Errorf("unknown operator %s", node.Operator)
+		}
+
+	case *ast.PostfixExpression:
+		switch node.Left.(type) {
+		case *ast.Identifier, *ast.IndexExpression:
+			var op string
+			if node.Operator == "++" {
+				op = "+="
+			} else {
+				op = "-="
+			}
+
+			c.Compile(&ast.AssignExpression{
+				Left:     node.Left,
+				Operator: op,
+				Token:    node.Token,
+				Right:    &ast.IntegerLiteral{Value: 1},
+			})
+		default:
+			var op string
+			if node.Operator == "++" {
+				op = "+"
+			} else {
+				op = "-"
+			}
+
+			c.Compile(&ast.InfixExpression{
+				Left:     node.Left,
+				Operator: op,
+				Right:    &ast.IntegerLiteral{Value: 1},
+			})
 		}
 
 	case *ast.IfExpression:

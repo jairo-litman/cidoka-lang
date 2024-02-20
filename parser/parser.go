@@ -21,6 +21,7 @@ const (
 	PREFIX      // -X, !X
 	CALL        // myFunction(X)
 	INDEX       // array[index], hash[key]
+	POSTFIX     // X++, X--
 )
 
 var assignCounter int
@@ -54,11 +55,14 @@ var precedences = map[token.TokenType]int{
 	token.MODULO:      PRODUCT,
 	token.LPAREN:      CALL,
 	token.LBRACKET:    INDEX,
+	token.INCREMENT:   POSTFIX,
+	token.DECREMENT:   POSTFIX,
 }
 
 type (
-	prefixParseFn func() ast.Expression
-	infixParseFn  func(ast.Expression) ast.Expression
+	prefixParseFn  func() ast.Expression
+	infixParseFn   func(ast.Expression) ast.Expression
+	postfixParseFn func(ast.Expression) ast.Expression
 )
 
 type Parser struct {
@@ -68,8 +72,9 @@ type Parser struct {
 	curToken  token.Token // current token
 	peekToken token.Token // next token
 
-	prefixParseFns map[token.TokenType]prefixParseFn // prefix parse functions
-	infixParseFns  map[token.TokenType]infixParseFn  // infix parse functions
+	prefixParseFns  map[token.TokenType]prefixParseFn  // prefix parse functions
+	infixParseFns   map[token.TokenType]infixParseFn   // infix parse functions
+	postfixParseFns map[token.TokenType]postfixParseFn // postfix parse functions
 }
 
 // ----------------------------------------------------------------------------
@@ -129,6 +134,11 @@ func New(lex *lexer.Lexer) *Parser {
 
 	parser.registerInfix(token.AND, parser.parseInfixExpression)
 	parser.registerInfix(token.OR, parser.parseInfixExpression)
+
+	// Postfix parse functions
+	parser.postfixParseFns = make(map[token.TokenType]postfixParseFn)
+	parser.registerPostfix(token.INCREMENT, parser.parsePostfixExpression)
+	parser.registerPostfix(token.DECREMENT, parser.parsePostfixExpression)
 
 	// Read two tokens, so curToken and peekToken are both set
 	parser.nextToken()
@@ -427,6 +437,12 @@ func (parser *Parser) parseExpression(precedence int) ast.Expression {
 	}
 	leftExp := prefix()
 
+	postfix := parser.postfixParseFns[parser.peekToken.Type]
+	if postfix != nil {
+		parser.nextToken()
+		leftExp = postfix(leftExp)
+	}
+
 	for !parser.peekTokenIs(token.SEMICOLON) && precedence < parser.peekPrecedence() {
 		infix := parser.infixParseFns[parser.peekToken.Type]
 		if infix == nil {
@@ -526,6 +542,17 @@ func (parser *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	precedence := parser.curPrecedence()
 	parser.nextToken()
 	expression.Right = parser.parseExpression(precedence)
+
+	return expression
+}
+
+/* Parses a postfix expression and returns the resulting AST node */
+func (parser *Parser) parsePostfixExpression(left ast.Expression) ast.Expression {
+	expression := &ast.PostfixExpression{
+		Token:    parser.curToken,
+		Operator: parser.curToken.Literal,
+		Left:     left,
+	}
 
 	return expression
 }
@@ -762,4 +789,9 @@ func (parser *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFn
 /* Registers an infix parse function for a token type */
 func (parser *Parser) registerInfix(tokenType token.TokenType, fn infixParseFn) {
 	parser.infixParseFns[tokenType] = fn
+}
+
+/* Registers a postfix parse function for a token type */
+func (parser *Parser) registerPostfix(tokenType token.TokenType, fn postfixParseFn) {
+	parser.postfixParseFns[tokenType] = fn
 }
