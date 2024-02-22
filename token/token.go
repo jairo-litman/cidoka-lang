@@ -2,6 +2,11 @@ package token
 
 type TokenType string
 
+type Token struct {
+	Type    TokenType // Type of token
+	Literal string    // Literal value of token
+}
+
 const (
 	// Special tokens
 
@@ -80,9 +85,17 @@ const (
 	WHILE    TokenType = "WHILE"    // while loop
 	BREAK    TokenType = "BREAK"    // break statement
 	CONTINUE TokenType = "CONTINUE" // continue statement
+
+	// Types
+
+	INT_TYPE      TokenType = "INT_TYPE"      // int type
+	FLOAT_TYPE    TokenType = "FLOAT_TYPE"    // float type
+	STRING_TYPE   TokenType = "STRING_TYPE"   // string type
+	BOOL_TYPE     TokenType = "BOOL_TYPE"     // bool type
+	FUNCTION_TYPE TokenType = "FUNCTION_TYPE" // function type
 )
 
-// Map of AssignmentOperators to their TokenType constants.
+// Map of AssignmentOperators.
 var AssignmentOperators = map[TokenType]bool{
 	ASSIGN:      true,
 	PLUS_EQ:     true,
@@ -90,11 +103,6 @@ var AssignmentOperators = map[TokenType]bool{
 	ASTERISK_EQ: true,
 	SLASH_EQ:    true,
 	MODULO_EQ:   true,
-}
-
-type Token struct {
-	Type    TokenType // Type of token
-	Literal string    // Literal value of token
 }
 
 // Map of Keywords to their TokenType constants.
@@ -112,13 +120,26 @@ var Keywords = map[string]TokenType{
 	"continue": CONTINUE,
 }
 
+// Map of Types to their TokenType constants.
+var Types = map[string]TokenType{
+	"int":      INT_TYPE,
+	"float":    FLOAT_TYPE,
+	"string":   STRING_TYPE,
+	"bool":     BOOL_TYPE,
+	"function": FUNCTION_TYPE,
+}
+
 /*
-Checks the keywords table to see if the given identifier is a keyword.
+Checks the keywords table to see if the given identifier is a keyword/type.
 
 If it is, it returns the keyword's TokenType constant. If not, it's an identifier.
 */
 func LookupIdent(ident string) TokenType {
 	if tok, ok := Keywords[ident]; ok {
+		return tok
+	}
+
+	if tok, ok := Types[ident]; ok {
 		return tok
 	}
 

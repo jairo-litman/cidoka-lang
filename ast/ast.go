@@ -202,6 +202,7 @@ func (continueStmt *ContinueStatement) String() string       { return continueSt
 type Identifier struct {
 	Token token.Token // token.IDENT
 	Value string      // name of the identifier // should be the same as the token literal
+	Type  string      // type of the identifier
 }
 
 func (ident *Identifier) expressionNode()      {}

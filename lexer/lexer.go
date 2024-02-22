@@ -79,7 +79,7 @@ func (l *Lexer) NextToken() token.Token {
 		tok.Type = token.EOF
 	default:
 		switch {
-		// if it's a letter, it's an identifier or a keyword
+		// if it's a letter, then it's an identifier or a keyword
 		case isLetter(l.ch):
 			tok.Literal = l.readIdentifier()
 			tok.Type = token.LookupIdent(tok.Literal)

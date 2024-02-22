@@ -269,6 +269,14 @@ func (parser *Parser) parseLetStatement() *ast.LetStatement {
 
 	stmt.Name = &ast.Identifier{Token: parser.curToken, Value: parser.curToken.Literal}
 
+	stmtType, err := parser.parseType()
+	if err != nil {
+		parser.errors = append(parser.errors, err.Error())
+		return nil
+	}
+
+	stmt.Name.Type = stmtType
+
 	if !parser.expectPeek(token.ASSIGN) {
 		return nil
 	}
@@ -286,6 +294,27 @@ func (parser *Parser) parseLetStatement() *ast.LetStatement {
 	}
 
 	return stmt
+}
+
+func (parser *Parser) parseType() (string, error) {
+	if _, ok := token.Types[parser.peekToken.Literal]; !ok {
+		return "", fmt.Errorf("unknown type %s", parser.peekToken.Literal)
+	}
+	parser.nextToken()
+
+	out := parser.curToken.Literal
+
+	for parser.peekTokenIs(token.LBRACKET) {
+		parser.nextToken()
+		if !parser.peekTokenIs(token.RBRACKET) {
+			return "", fmt.Errorf("expected ] but got %s", parser.peekToken.Literal)
+		}
+		parser.nextToken()
+
+		out += "[]"
+	}
+
+	return out, nil
 }
 
 /* Parses a return statement and returns the resulting AST node */

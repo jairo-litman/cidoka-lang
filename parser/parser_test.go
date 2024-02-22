@@ -12,9 +12,9 @@ func TestLetStatements(t *testing.T) {
 		expectedIdentifier string
 		expectedValue      interface{}
 	}{
-		{"let x = 5;", "x", 5},
-		{"let y = true;", "y", true},
-		{"let foobar = y;", "foobar", "y"},
+		{"let x int = 5;", "x", 5},
+		{"let y bool = true;", "y", true},
+		{"let foobar bool = y;", "foobar", "y"},
 	}
 
 	for _, tt := range tests {
@@ -1001,7 +1001,7 @@ func TestParsingHashLiteralsWithExpressions(t *testing.T) {
 }
 
 func TestFunctionLiteralWithName(t *testing.T) {
-	input := `let myFunction = fn() { };`
+	input := `let myFunction function = fn() { };`
 
 	l := lexer.New(input)
 	p := New(l)
@@ -1057,7 +1057,7 @@ func TestParsingFloatLiteralExpression(t *testing.T) {
 
 func TestAssignStatement(t *testing.T) {
 	input := `
-	let x = 5;
+	let x int = 5;
 	x = 10;
 	`
 
@@ -1099,8 +1099,8 @@ func TestAssignStatement(t *testing.T) {
 
 func TestForLoop(t *testing.T) {
 	input := `
-	for (let i = 0; i < 10; i = i + 1) {
-		let x = 5;
+	for (let i int = 0; i < 10; i = i + 1) {
+		let x int = 5;
 	}
 	`
 
@@ -1368,5 +1368,43 @@ func TestPostfixOperator(t *testing.T) {
 
 	if exp.Operator != "++" {
 		t.Fatalf("exp.Operator not %s. got=%s", "++", exp.Operator)
+	}
+}
+
+func TestTypes(t *testing.T) {
+	input := `
+	let x int = 5;
+	let y float = 5.5;
+	let z bool = true;
+	let a string = "hello";
+	let b int[] = [1, 2, 3];
+	let c int[][] = [[0], [1, 2, 3]]
+	`
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	tests := []struct {
+		expectedType string
+	}{
+		{"int"},
+		{"float"},
+		{"bool"},
+		{"string"},
+		{"int[]"},
+		{"int[][]"},
+	}
+
+	for i, tt := range tests {
+		stmt, ok := program.Statements[i].(*ast.LetStatement)
+		if !ok {
+			t.Fatalf("stmt not *ast.LetStatement. got=%T", program.Statements[i])
+		}
+
+		if stmt.Name.Type != tt.expectedType {
+			t.Fatalf("stmt.Type not %s. got=%s", tt.expectedType, stmt.Name.Type)
+		}
 	}
 }

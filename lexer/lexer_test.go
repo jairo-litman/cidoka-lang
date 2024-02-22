@@ -256,6 +256,40 @@ func TestNextToken(t *testing.T) {
 				{token.EOF, ""},
 			},
 		},
+		{
+			input: `let x int = 5;
+			let y float = 10.5;
+			let z int[] = [1, 2, 3];`,
+			expected: []ExpectedToken{
+				{token.LET, "let"},
+				{token.IDENT, "x"},
+				{token.INT_TYPE, "int"},
+				{token.ASSIGN, "="},
+				{token.INT, "5"},
+				{token.SEMICOLON, ";"},
+				{token.LET, "let"},
+				{token.IDENT, "y"},
+				{token.FLOAT_TYPE, "float"},
+				{token.ASSIGN, "="},
+				{token.FLOAT, "10.5"},
+				{token.SEMICOLON, ";"},
+				{token.LET, "let"},
+				{token.IDENT, "z"},
+				{token.INT_TYPE, "int"},
+				{token.LBRACKET, "["},
+				{token.RBRACKET, "]"},
+				{token.ASSIGN, "="},
+				{token.LBRACKET, "["},
+				{token.INT, "1"},
+				{token.COMMA, ","},
+				{token.INT, "2"},
+				{token.COMMA, ","},
+				{token.INT, "3"},
+				{token.RBRACKET, "]"},
+				{token.SEMICOLON, ";"},
+				{token.EOF, ""},
+			},
+		},
 	}
 
 	for _, tt := range tests {
