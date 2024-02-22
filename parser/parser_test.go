@@ -1354,8 +1354,6 @@ func TestPostfixOperator(t *testing.T) {
 	program := p.ParseProgram()
 	checkParserErrors(t, p)
 
-	println(program.String())
-
 	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
 	if !ok {
 		t.Fatalf("stmt not *ast.ExpressionStatement. got=%T", program.Statements[0])
