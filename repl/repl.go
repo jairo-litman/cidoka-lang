@@ -104,7 +104,9 @@ func printParserErrors(out io.Writer, errors []string) {
 	}
 }
 
-func completer(line string) (c []string) {
+func completer(line string) []string {
+	c := []string{}
+
 	for _, builtin := range object.Builtins {
 		if len(line) < len(builtin.Name) && builtin.Name[:len(line)] == line {
 			c = append(c, builtin.Name)
@@ -117,7 +119,7 @@ func completer(line string) (c []string) {
 		}
 	}
 
-	return
+	return c
 }
 
 func scanInput(liner *liner.State) (string, error) {
